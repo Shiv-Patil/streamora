@@ -11,9 +11,9 @@ import { MagnifyingGlassIcon } from "@radix-ui/react-icons";
 const Navbar = () => {
   const { authState, updateAuthState } = useAuth();
 
-  const onSuccess = async (credentialResponse: CredentialResponse) => {
+  const onSuccess = (credentialResponse: CredentialResponse) => {
     axios
-      .post("http://localhost:9000/api/login", {
+      .post<{ token: string }>("http://localhost:9000/api/login", {
         token: credentialResponse.credential,
       })
       .then((response) => {
@@ -21,7 +21,7 @@ const Navbar = () => {
         toast.success("Logged in successfully");
       })
       .catch((error) => {
-        if (axios.isAxiosError(error)) {
+        if (axios.isAxiosError<{ message: string }>(error)) {
           toast.error(error.response?.data.message || "Login failed");
         } else {
           console.error(error);

@@ -9,7 +9,7 @@ import { NavLink } from "./NavLink";
 import { useState } from "react";
 
 const Sidenav = () => {
-  const [following, _setFollowing] = useState([]);
+  const [following] = useState([]);
 
   return (
     <div className="relative w-64 p-4 pt-0 max-lg:hidden">

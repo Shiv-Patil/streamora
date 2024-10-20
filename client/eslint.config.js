@@ -36,11 +36,17 @@ export default tseslint.config(
     rules: {
       ...reactHooks.configs.recommended.rules,
       "react-refresh/only-export-components": [
-        "warn",
+        "off",
         { allowConstantExport: true },
       ],
       ...react.configs.recommended.rules,
       ...react.configs["jsx-runtime"].rules,
+    },
+  },
+  {
+    files: ["src/components/ui/**/*.tsx"],
+    rules: {
+      "react/prop-types": ["off"],
     },
   }
 );
