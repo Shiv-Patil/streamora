@@ -4,7 +4,7 @@ import NotFoundPage from "@/views/NotFound";
 import { Toaster } from "@/components/ui/sonner";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
-import { AuthProvider } from "@/lib/Auth";
+import { AuthProvider } from "@/hooks/Auth";
 import WithNavbar from "./layouts/WithNavbar";
 import { GOOGLE_CLIENT_ID } from "./lib/constants";
 

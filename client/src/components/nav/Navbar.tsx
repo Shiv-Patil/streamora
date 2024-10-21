@@ -1,19 +1,21 @@
 import { NavigationMenu } from "@radix-ui/react-navigation-menu";
 import { Link as RouterLink } from "react-router-dom";
 import { CredentialResponse, GoogleLogin } from "@react-oauth/google";
-import { useAuth } from "@/lib/Auth";
-import axios from "axios";
+import { useAuth } from "@/hooks/Auth";
 import { toast } from "sonner";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { MagnifyingGlassIcon } from "@radix-ui/react-icons";
+import api from "@/lib/axios-instance";
+import { isAxiosError } from "axios";
+import { LOGIN_ENDPOINT } from "@/lib/constants";
 
 const Navbar = () => {
   const { authState, updateAuthState } = useAuth();
 
   const onSuccess = (credentialResponse: CredentialResponse) => {
-    axios
-      .post<{ token: string }>("http://localhost:9000/api/login", {
+    api
+      .post<{ token: string }>(LOGIN_ENDPOINT, {
         token: credentialResponse.credential,
       })
       .then((response) => {
@@ -21,7 +23,7 @@ const Navbar = () => {
         toast.success("Logged in successfully");
       })
       .catch((error) => {
-        if (axios.isAxiosError<{ message: string }>(error)) {
+        if (isAxiosError<{ message: string }>(error)) {
           toast.error(error.response?.data.message || "Login failed");
         } else {
           console.error(error);

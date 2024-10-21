@@ -1,0 +1,68 @@
+services:
+    express:
+        build:
+            dockerfile: ./Dockerfile
+            context: .
+        container_name: streamora-api
+        volumes:
+            - .:/app
+        restart: unless-stopped
+        ports:
+            - 9000:9000
+        depends_on:
+            - postgres
+            - redis
+        environment:
+            TZ: Asia/Kolkata
+            DOCKER_ENVIRONMENT: true
+        networks:
+            - api-network
+
+    postgres:
+        image: postgres:latest
+        container_name: streamora-db
+        restart: no
+        environment:
+            POSTGRES_USER: postgres
+            POSTGRES_PASSWORD: postgres
+            TZ: "Asia/Kolkata"
+        ports:
+            - ${DB_PORT}:5432
+        volumes:
+            - postgres_db:/var/lib/postgresql/data
+        networks:
+            - api-network
+
+    pgadmin:
+        image: dpage/pgadmin4:latest
+        container_name: streamora-pgadmin
+        environment:
+            PGADMIN_DEFAULT_EMAIL: admin@example.com
+            PGADMIN_DEFAULT_PASSWORD: admin
+            TZ: Asia/Kolkata
+            GUNICORN_ACCESS_LOGFILE: "/dev/null"
+            PGADMIN_CONFIG_UPGRADE_CHECK_ENABLED: "False"
+        ports:
+            - "5050:80"
+        depends_on:
+            - postgres
+        networks:
+            - api-network
+        logging:
+            driver: none
+
+    redis:
+        image: redis:6.2.5
+        container_name: streamora-redis
+        restart: no
+        ports:
+            - 6379:6379
+        networks:
+            - api-network
+
+volumes:
+    postgres_db:
+
+networks:
+    api-network:
+        driver: bridge
