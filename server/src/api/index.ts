@@ -1,5 +1,6 @@
 import express from "express";
 import authRouter from "./auth";
+import userRouter from "./user";
 const router = express.Router();
 
 // Public routes
@@ -18,5 +19,7 @@ router.get("/protected", (_req, res) => {
         message: "Protected!",
     });
 });
+
+router.use("/user", userRouter);
 
 export default router;

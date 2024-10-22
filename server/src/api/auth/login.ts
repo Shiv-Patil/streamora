@@ -89,7 +89,7 @@ router.post(
 
                         await tx.insert(users).values({
                             userId: ticketPayload.sub,
-                            email: ticketPayload.email,
+                            email: ticketPayload.email!,
                             username: uniqueUsername,
                             profilePicture: ticketPayload.picture,
                         });

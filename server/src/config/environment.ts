@@ -1,3 +1,5 @@
+import path from "path";
+
 /**
 |----------------------------------------------------------------------------------------|
     App Configuration
@@ -7,6 +9,7 @@ export const ENVIRONMENT = process.env.NODE_ENV;
 export const PROD = ENVIRONMENT === "production";
 export const PORT = process.env.PORT ?? "9000";
 export const DOCKER = process.env.DOCKER_ENVIRONMENT ? true : false;
+export const STATIC_DIR = path.join(__dirname, "..", "..", "static");
 
 /**
 |----------------------------------------------------------------------------------------|
