@@ -11,9 +11,9 @@ export enum HttpCode {
 }
 
 export class AppError extends Error {
-    public readonly name: string;
-    public readonly httpCode: HttpCode;
-    public readonly feedback?: string;
+    public name: string;
+    public httpCode: HttpCode;
+    public feedback?: string;
 
     constructor(args: AppErrorArgs) {
         super(args.description);

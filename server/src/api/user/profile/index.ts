@@ -1,10 +1,12 @@
 import { AppError, HttpCode } from "@/config/errors";
 import db from "@/lib/db";
-import { users } from "@/lib/db/schema/auth";
+import { users } from "@/lib/db/schema/users";
 import assert from "assert";
 import { eq } from "drizzle-orm";
 import express from "express";
 import asyncHandler from "express-async-handler";
+import profilePictureRouter from "./profilePicture";
+import bioRouter from "./bio";
 const router = express.Router();
 
 router.get(
@@ -35,5 +37,8 @@ router.get(
         }
     })
 );
+
+router.use("/profilePicture", profilePictureRouter);
+router.use("/bio", bioRouter);
 
 export default router;

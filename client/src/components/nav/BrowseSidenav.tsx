@@ -8,18 +8,15 @@ import {
 import { NavLink } from "./NavLink";
 import { useState } from "react";
 
-const Sidenav = () => {
+const BrowseSidenav = () => {
   const [following] = useState([]);
 
   return (
     <div className="relative w-64 p-4 pt-0 max-lg:hidden">
       <NavigationMenu className="sticky top-16 flex h-[calc(100vh-5rem)] w-full flex-col gap-2 rounded-xl bg-card/50 p-2 shadow-xl backdrop-blur-lg">
-        <NavigationMenuList>
+        <NavigationMenuList className="gap-2">
           <NavigationMenuItem>
-            <NavLink
-              className="flex cursor-pointer items-center gap-4 rounded-md p-2 hover:bg-card/80 data-[active]:bg-card/60"
-              to="/"
-            >
+            <NavLink to="/">
               <VideoCameraIcon className="h-6 w-6" />
               Browse
             </NavLink>
@@ -41,4 +38,4 @@ const Sidenav = () => {
   );
 };
 
-export default Sidenav;
+export default BrowseSidenav;

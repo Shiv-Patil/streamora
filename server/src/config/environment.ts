@@ -10,6 +10,7 @@ export const PROD = ENVIRONMENT === "production";
 export const PORT = process.env.PORT ?? "9000";
 export const DOCKER = process.env.DOCKER_ENVIRONMENT ? true : false;
 export const STATIC_DIR = path.join(__dirname, "..", "..", "static");
+export const HOSTNAME = PROD ? process.env.HOSTNAME : "http://localhost:9000/";
 
 /**
 |----------------------------------------------------------------------------------------|

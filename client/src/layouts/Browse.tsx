@@ -1,17 +1,17 @@
 import Navbar from "@/components/nav/Navbar";
-import Sidenav from "@/components/nav/Sidenav";
+import BrowseSidenav from "@/components/nav/BrowseSidenav";
 import { Outlet } from "react-router-dom";
 
-const WithNavbar = () => {
+const BrowseLayout = () => {
   return (
     <>
       <Navbar />
       <div className="flex">
-        <Sidenav />
+        <BrowseSidenav />
         <Outlet />
       </div>
     </>
   );
 };
 
-export default WithNavbar;
+export default BrowseLayout;

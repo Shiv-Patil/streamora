@@ -10,7 +10,7 @@ import db from "@/lib/db";
 import { eq } from "drizzle-orm";
 import { generateAccessToken, generateRefreshToken } from "@/lib/auth";
 import { refreshTokenCookieOptions } from "@/config/auth";
-import { refreshTokens } from "@/lib/db/schema/auth";
+import { refreshTokens } from "@/lib/db/schema/users";
 import jwt, { type VerifyErrors } from "jsonwebtoken";
 import { rateLimit } from "@/config/ratelimit";
 

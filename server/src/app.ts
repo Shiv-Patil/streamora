@@ -11,7 +11,7 @@ import { AppError, HttpCode } from "@/config/errors";
 import { errorHandler } from "@/middleware/errorhandler";
 import logger from "@/lib/logger";
 import { rateLimit } from "@/config/ratelimit";
-import { DOCKER } from "./config/environment";
+import { DOCKER, STATIC_DIR } from "./config/environment";
 
 const app = express();
 if (DOCKER) {
@@ -19,15 +19,28 @@ if (DOCKER) {
     app.set("trust proxy", 1);
 }
 
+app.use(cors(corsOptions));
 app.use(helmet());
 app.set("view engine", "jade");
 app.disable("x-powered-by");
 app.use(cookieParser());
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
-app.use(cors(corsOptions));
 app.use(rateLimit());
 
+app.use(
+    "/file",
+    express.static(STATIC_DIR, {
+        acceptRanges: false,
+        extensions: ["webp", "png", "jpeg"],
+        setHeaders(res) {
+            res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+        },
+    }),
+    (_req, res, _next) => {
+        res.status(HttpCode.NOT_FOUND).send();
+    }
+);
 app.use("/api/", api);
 
 // catch 404

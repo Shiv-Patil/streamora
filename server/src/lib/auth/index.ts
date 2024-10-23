@@ -1,13 +1,13 @@
 import jwt from "jsonwebtoken";
 import db from "@/lib/db";
-import { refreshTokens } from "@/lib/db/schema/auth";
+import { refreshTokens } from "@/lib/db/schema/users";
 import {
     ACCESS_TOKEN_EXPIRY,
     ACCESS_TOKEN_SECRET,
     REFRESH_TOKEN_EXPIRY,
     REFRESH_TOKEN_SECRET,
 } from "@/config/environment";
-import { users } from "@/lib/db/schema/auth";
+import { users } from "@/lib/db/schema/users";
 import { eq, like } from "drizzle-orm";
 import { JwtPayload } from "@/types/auth";
 import { ReturnData, Transaction } from "@/types/generic";

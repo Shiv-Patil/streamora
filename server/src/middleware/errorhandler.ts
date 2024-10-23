@@ -20,9 +20,7 @@ class ErrorHandler {
                 `${request ? request.path + " " : ""}[${error.httpCode}]: ${error.message}${error.feedback ? " | " + error.feedback : ""}`
             );
         if (response)
-            response
-                .status(error.httpCode)
-                .json({ trusted: true, message: error.message });
+            response.status(error.httpCode).json({ message: error.message });
     }
     private handleCriticalError(
         error: Error | AppError,

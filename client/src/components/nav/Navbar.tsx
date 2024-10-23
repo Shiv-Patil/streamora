@@ -5,13 +5,16 @@ import { useAuth } from "@/hooks/Auth";
 import { toast } from "sonner";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
-import { MagnifyingGlassIcon } from "@radix-ui/react-icons";
+import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import api from "@/lib/axios-instance";
 import { isAxiosError } from "axios";
 import { LOGIN_ENDPOINT } from "@/lib/constants";
+import useProfile from "@/hooks/Profile";
+import UserAvatar from "../UserAvatar";
 
 const Navbar = () => {
   const { authState, updateAuthState } = useAuth();
+  const { data: userProfile } = useProfile();
 
   const onSuccess = (credentialResponse: CredentialResponse) => {
     api
@@ -69,7 +72,14 @@ const Navbar = () => {
           shape="pill"
           theme="filled_black"
         />
-      ) : null}
+      ) : (
+        <RouterLink to="/dashboard">
+          <UserAvatar
+            profilePicture={userProfile?.profilePicture || ""}
+            className="cursor-pointer bg-card/50 shadow-md"
+          />
+        </RouterLink>
+      )}
     </div>
   );
 };
