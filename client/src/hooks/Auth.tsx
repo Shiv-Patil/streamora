@@ -7,6 +7,7 @@ import {
 } from "react";
 import { jwtDecode } from "jwt-decode";
 import { ACCESS_TOKEN_KEY } from "@/lib/constants";
+import api from "@/lib/axios-instance";
 
 interface AuthState {
   userId: string;
@@ -17,6 +18,7 @@ interface AuthContextType {
   authState: AuthState | null;
   updateAuthState: (accessToken?: string | null) => void;
   refreshAuthState: () => void;
+  logOut: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -61,10 +63,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setAuthState(parseJwt(accessToken));
   }, [setAuthState]);
 
+  const logOut = useCallback(async () => {
+    try {
+      await api.post("/auth/logout");
+      updateAuthState(null);
+    } catch {}
+  }, [updateAuthState]);
+
   const value: AuthContextType = {
     authState,
     updateAuthState,
     refreshAuthState,
+    logOut,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

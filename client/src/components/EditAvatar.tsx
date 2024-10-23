@@ -169,7 +169,7 @@ const EditAvatar = () => {
           </label>
           <span className="text-sm">
             Must be JPEG or PNG, with a square aspect ratio. Resolution must be
-            a minimum of 128x128px and a maximum of 3000x3000px and size cannot
+            a minimum of 128x128px and a maximum of 1024x1024px and size cannot
             exceed 2MB.
           </span>
           <Button

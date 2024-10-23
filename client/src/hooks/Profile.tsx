@@ -1,6 +1,8 @@
 import api from "@/lib/axios-instance";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "./Auth";
+import defaultProfilePicture from "@/assets/default_profilePicture.webp";
+import defaultProfileBanner from "@/assets/banner.png";
 
 interface ResponseData {
   userId: string;
@@ -26,8 +28,8 @@ const defaultProfile: Profile = {
   userId: "",
   username: "user",
   email: "user@example.com",
-  profilePicture: "",
-  profileBanner: "/banner.png",
+  profilePicture: defaultProfilePicture,
+  profileBanner: defaultProfileBanner,
   bio: "",
   followerCount: 0,
 };
@@ -40,7 +42,6 @@ const fetchProfile = async (): Promise<Profile> => {
     profilePicture:
       response.data.profilePicture || defaultProfile.profilePicture,
   };
-  console.log(profile);
   return profile;
 };
 

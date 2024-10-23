@@ -1,8 +1,9 @@
 import { Request, Response, NextFunction } from "express";
-import { ACCESS_TOKEN_SECRET } from "@/config/environment";
+import { ACCESS_TOKEN_SECRET, REDIS_KEYS } from "@/config/environment";
 import jwt from "jsonwebtoken";
 import { z } from "zod";
 import { AppError, HttpCode } from "@/config/errors";
+import redisClient from "@/lib/redis";
 
 // Attaches user object to req
 const authMiddleware = (req: Request, _res: Response, next: NextFunction) => {
@@ -27,9 +28,32 @@ const authMiddleware = (req: Request, _res: Response, next: NextFunction) => {
         const jwtPayloadSchema = z.object({
             userId: z.string(),
             sessionExpiry: z.number(),
+            iat: z.number(),
         });
         const parsed = jwtPayloadSchema.safeParse(decoded);
         if (!parsed.success) return next(errObj);
+
+        // check if sessions were invalidated
+        try {
+            const lastSessionInvalidation = await redisClient.get(
+                `${REDIS_KEYS.lastSessionInvalidation}:${parsed.data.userId}`
+            );
+            if (
+                lastSessionInvalidation &&
+                parsed.data.iat <= +lastSessionInvalidation
+            ) {
+                errObj.message = "Access token expired";
+                return next(errObj);
+            }
+        } catch (e) {
+            next(
+                new AppError({
+                    httpCode: HttpCode.INTERNAL_SERVER_ERROR,
+                    description: "An error occurred",
+                    feedback: `Redis error: ${e as Error}`,
+                })
+            );
+        }
 
         req.user = parsed.data;
         return next();

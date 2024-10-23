@@ -1,6 +1,6 @@
-import { UserIcon } from "@heroicons/react/24/outline";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { cn } from "@/lib/utils";
+import defaultProfilePicture from "@/assets/default_profilePicture.webp";
 
 const UserAvatar = ({
   profilePicture,
@@ -12,8 +12,11 @@ const UserAvatar = ({
   return (
     <Avatar className={cn("h-11 w-11 overflow-clip", className)}>
       <AvatarImage src={profilePicture || ""} />
-      <AvatarFallback className="p-[6px]">
-        <UserIcon />
+      <AvatarFallback className="bg-transparent">
+        <img
+          src={defaultProfilePicture}
+          className="h-full w-full object-cover"
+        />
       </AvatarFallback>
     </Avatar>
   );

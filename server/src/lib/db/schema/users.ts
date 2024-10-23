@@ -1,4 +1,4 @@
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import {
     pgTable,
     text,
@@ -8,6 +8,7 @@ import {
     integer,
     primaryKey,
 } from "drizzle-orm/pg-core";
+import { streamCategory } from "./enums";
 
 export const users = pgTable("users", {
     userId: text("id").primaryKey(),
@@ -17,6 +18,10 @@ export const users = pgTable("users", {
     profileBanner: text("profile_banner"),
     bio: text("bio").notNull().default(""),
     followerCount: integer("follower_count").notNull().default(0),
+    streamCategories: streamCategory("streamCategories")
+        .array()
+        .notNull()
+        .default(sql`'{}'::stream_category[]`),
 });
 
 export const usersRelations = relations(users, ({ many }) => ({

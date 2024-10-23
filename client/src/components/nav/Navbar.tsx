@@ -5,15 +5,31 @@ import { useAuth } from "@/hooks/Auth";
 import { toast } from "sonner";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
-import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
+import {
+  ComputerDesktopIcon,
+  MagnifyingGlassIcon,
+} from "@heroicons/react/24/outline";
 import api from "@/lib/axios-instance";
 import { isAxiosError } from "axios";
 import { LOGIN_ENDPOINT } from "@/lib/constants";
 import useProfile from "@/hooks/Profile";
 import UserAvatar from "../UserAvatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  ArrowLeftStartOnRectangleIcon,
+  UserIcon,
+} from "@heroicons/react/24/outline";
 
 const Navbar = () => {
-  const { authState, updateAuthState } = useAuth();
+  const { authState, updateAuthState, logOut } = useAuth();
   const { data: userProfile } = useProfile();
 
   const onSuccess = (credentialResponse: CredentialResponse) => {
@@ -73,12 +89,46 @@ const Navbar = () => {
           theme="filled_black"
         />
       ) : (
-        <RouterLink to="/dashboard">
-          <UserAvatar
-            profilePicture={userProfile?.profilePicture || ""}
-            className="cursor-pointer bg-card/50 shadow-md"
-          />
-        </RouterLink>
+        <DropdownMenu>
+          <DropdownMenuTrigger>
+            <UserAvatar
+              profilePicture={userProfile?.profilePicture || ""}
+              className="cursor-pointer bg-card/50 shadow-md"
+            />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-56">
+            <DropdownMenuLabel>My Account</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuGroup>
+              <DropdownMenuItem>
+                <RouterLink
+                  to="/dashboard/profile"
+                  className="flex w-full items-center gap-1"
+                >
+                  <UserIcon className="h-6 w-6" />
+                  Profile
+                </RouterLink>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <RouterLink
+                  to="/dashboard"
+                  className="flex w-full items-center gap-1"
+                >
+                  <ComputerDesktopIcon className="h-6 w-6" />
+                  Dashboard
+                </RouterLink>
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              className="flex cursor-pointer items-center gap-1"
+              onClick={logOut}
+            >
+              <ArrowLeftStartOnRectangleIcon className="h-6 w-6" />
+              <span className="flex-1">Log out</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       )}
     </div>
   );

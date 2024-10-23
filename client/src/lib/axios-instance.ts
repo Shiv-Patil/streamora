@@ -68,13 +68,12 @@ api.interceptors.response.use(
               originalRequest.headers["Authorization"] =
                 `Bearer ${accessToken}`;
               return api(originalRequest);
-            } catch (refreshError) {
+            } catch {
               localStorage.removeItem(ACCESS_TOKEN_KEY);
               isRefreshing = false;
               refreshSubscribers = [];
               window.location.reload();
-              // eslint-disable-next-line  @typescript-eslint/prefer-promise-reject-errors
-              return Promise.reject(refreshError);
+              return Promise.reject();
             }
           } else {
             return new Promise((resolve) => {

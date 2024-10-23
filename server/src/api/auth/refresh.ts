@@ -1,4 +1,6 @@
 import {
+    ACCESS_TOKEN_EXPIRY,
+    REDIS_KEYS,
     REFRESH_TOKEN_COOKIE,
     REFRESH_TOKEN_SECRET,
 } from "@/config/environment";
@@ -13,6 +15,8 @@ import { refreshTokenCookieOptions } from "@/config/auth";
 import { refreshTokens } from "@/lib/db/schema/users";
 import jwt, { type VerifyErrors } from "jsonwebtoken";
 import { rateLimit } from "@/config/ratelimit";
+import redisClient from "@/lib/redis";
+import ms from "ms";
 
 const router = express.Router();
 
@@ -51,6 +55,7 @@ router.post(
                         });
                         const parsed = jwtPayloadSchema.safeParse(decoded);
                         if (!parsed.success) {
+                            res.clearCookie(REFRESH_TOKEN_COOKIE);
                             return next(
                                 new AppError({
                                     httpCode: HttpCode.INTERNAL_SERVER_ERROR,
@@ -64,13 +69,15 @@ router.post(
                                 .select()
                                 .from(refreshTokens)
                                 .where(eq(refreshTokens.token, refreshToken));
-                            if (!response.length)
+                            if (!response.length) {
+                                res.clearCookie(REFRESH_TOKEN_COOKIE);
                                 return next(
                                     new AppError({
                                         httpCode: HttpCode.FORBIDDEN,
                                         description: "Invalid refresh token",
                                     })
                                 );
+                            }
                             storedTokenData = response[0];
                         } catch {
                             return next(
@@ -82,12 +89,21 @@ router.post(
                         }
                         if (storedTokenData.used) {
                             // Refresh token reuse detected
-                            // TODO: invalidate all sessions
+                            // invalidate all sessions
                             await db
                                 .delete(refreshTokens)
                                 .where(
                                     eq(refreshTokens.userId, parsed.data.userId)
                                 );
+                            await redisClient.set(
+                                `${REDIS_KEYS.lastSessionInvalidation}:${parsed.data.userId}`,
+                                `${Date.now() / 1000}`,
+                                {
+                                    PX:
+                                        ms(ACCESS_TOKEN_EXPIRY) ??
+                                        1000 * 60 * 30,
+                                }
+                            );
                             return next(
                                 new AppError({
                                     httpCode: HttpCode.UNAUTHORIZED,
