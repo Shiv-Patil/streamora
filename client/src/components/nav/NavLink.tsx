@@ -13,7 +13,7 @@ export const NavLink = ({ to, className, ...props }: LinkProps) => {
         draggable={false}
         to={to}
         className={cn(
-          "flex cursor-pointer items-center gap-4 rounded-md bg-card/20 p-2 shadow-md hover:bg-card/40 active:shadow-none data-[active]:bg-transparent data-[active]:shadow-none",
+          "flex cursor-pointer items-center gap-4 rounded-md bg-primary p-2 hover:brightness-125 data-[active]:pointer-events-none data-[active]:bg-muted",
           className
         )}
         {...props}

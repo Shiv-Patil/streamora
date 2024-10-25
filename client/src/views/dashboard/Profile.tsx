@@ -27,7 +27,7 @@ const ProfileSection = ({
   return (
     <div
       className={cn(
-        "flex flex-col gap-4 rounded-xl bg-card/50 p-4 shadow-md",
+        "flex flex-col gap-4 rounded-xl bg-card p-4 shadow-md",
         className
       )}
       {...props}

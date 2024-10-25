@@ -28,6 +28,9 @@ app.use(cookieParser());
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
+const staticErrorHandler: ErrorRequestHandler = (err, _req, _res, _next) => {
+    logger.error(err as Error);
+};
 app.use(
     "/file",
     express.static(STATIC_DIR, {
@@ -54,6 +57,7 @@ app.use(
         res.status(HttpCode.NOT_FOUND).send();
     }
 );
+app.use(staticErrorHandler);
 
 app.use(rateLimit());
 app.use("/api/", api);

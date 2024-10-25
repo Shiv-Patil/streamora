@@ -13,7 +13,7 @@ import { Separator } from "../ui/separator";
 const DashboardSidenav = () => {
   return (
     <div className="relative w-64 p-4">
-      <NavigationMenu className="sticky top-4 flex h-[calc(100vh-2rem)] w-full flex-col gap-4 rounded-xl bg-card/50 p-2 shadow-xl backdrop-blur-lg">
+      <NavigationMenu className="sticky top-4 flex h-[calc(100vh-2rem)] w-full flex-col gap-4 rounded-xl bg-card p-2 shadow-xl backdrop-blur-lg">
         <span className="p-2 pb-6">Creator Dashboard</span>
         <Separator />
         <ul className="flex flex-1 flex-col gap-2">

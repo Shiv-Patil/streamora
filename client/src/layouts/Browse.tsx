@@ -4,13 +4,13 @@ import { Outlet } from "react-router-dom";
 
 const BrowseLayout = () => {
   return (
-    <>
+    <div className="flex min-h-screen flex-col">
       <Navbar />
-      <div className="flex">
+      <div className="flex flex-1">
         <BrowseSidenav />
         <Outlet />
       </div>
-    </>
+    </div>
   );
 };
 

@@ -12,8 +12,8 @@ const BrowseSidenav = () => {
   const [following] = useState([]);
 
   return (
-    <div className="relative w-64 p-4 pt-0 max-lg:hidden">
-      <NavigationMenu className="sticky top-16 flex h-[calc(100vh-5rem)] w-full flex-col gap-2 rounded-xl bg-card/50 p-2 shadow-xl backdrop-blur-lg">
+    <div className="relative w-64 p-4 pr-0 pt-0 max-lg:hidden">
+      <NavigationMenu className="sticky top-16 flex h-[calc(100vh-5rem)] w-full flex-col gap-2 rounded-xl bg-card p-2 shadow-xl backdrop-blur-lg">
         <NavigationMenuList className="gap-2">
           <NavigationMenuItem>
             <NavLink to="/">

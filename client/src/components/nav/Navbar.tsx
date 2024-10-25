@@ -52,10 +52,10 @@ const Navbar = () => {
   };
 
   return (
-    <div className="sticky inset-x-0 top-0 z-50 flex h-16 w-full items-center justify-between gap-4 bg-background/50 px-4 py-2 backdrop-blur-lg transition-all">
+    <div className="sticky inset-x-0 top-0 z-50 flex h-16 w-full items-center gap-4 bg-background/50 px-4 py-2 backdrop-blur-lg transition-all">
       <RouterLink
         to="/"
-        className="flex flex-shrink-0 items-center gap-2 text-xl"
+        className="flex flex-1 flex-shrink-0 items-center gap-2 text-xl"
       >
         <img
           src={"/logo.png"}
@@ -67,10 +67,10 @@ const Navbar = () => {
         <span className="max-sm:hidden">Streamora</span>
       </RouterLink>
 
-      <NavigationMenu className="relative">
+      <NavigationMenu className="relative flex-1">
         <Input
           placeholder="Search"
-          className="h-10 flex-shrink rounded-full border-none bg-primary px-4 pr-10 text-primary-foreground placeholder:text-muted"
+          className="h-10 flex-shrink rounded-full bg-card px-4 pr-10 text-foreground placeholder:text-muted-foreground"
         />
         <Button
           className="absolute right-0 top-0 aspect-square h-full rounded-full bg-transparent p-2 text-primary-foreground hover:bg-background/20"
@@ -81,54 +81,58 @@ const Navbar = () => {
       </NavigationMenu>
 
       {!authState ? (
-        <GoogleLogin
-          onSuccess={onSuccess}
-          onError={() => toast.error("Login failed")}
-          text="continue_with"
-          shape="pill"
-          theme="filled_black"
-        />
+        <div className="flex flex-1 justify-end">
+          <GoogleLogin
+            onSuccess={onSuccess}
+            onError={() => toast.error("Login failed")}
+            text="continue_with"
+            shape="pill"
+            theme="filled_black"
+          />
+        </div>
       ) : (
-        <DropdownMenu>
-          <DropdownMenuTrigger>
-            <UserAvatar
-              profilePicture={userProfile?.profilePicture || ""}
-              className="cursor-pointer bg-card/50 shadow-md"
-            />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56">
-            <DropdownMenuLabel>My Account</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <RouterLink
-                  to="/dashboard/profile"
-                  className="flex w-full items-center gap-1"
-                >
-                  <UserIcon className="h-6 w-6" />
-                  Profile
-                </RouterLink>
+        <nav className="flex flex-1 justify-end">
+          <DropdownMenu>
+            <DropdownMenuTrigger>
+              <UserAvatar
+                profilePicture={userProfile?.profilePicture || ""}
+                className="cursor-pointer bg-card shadow-md"
+              />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="mr-4 w-56 border-2 bg-card shadow-2xl">
+              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuGroup>
+                <DropdownMenuItem>
+                  <RouterLink
+                    to="/dashboard/profile"
+                    className="flex w-full items-center gap-1"
+                  >
+                    <UserIcon className="h-6 w-6" />
+                    Profile
+                  </RouterLink>
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <RouterLink
+                    to="/dashboard"
+                    className="flex w-full items-center gap-1"
+                  >
+                    <ComputerDesktopIcon className="h-6 w-6" />
+                    Dashboard
+                  </RouterLink>
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                className="flex cursor-pointer items-center gap-1"
+                onClick={logOut}
+              >
+                <ArrowLeftStartOnRectangleIcon className="h-6 w-6" />
+                <span className="flex-1">Log out</span>
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <RouterLink
-                  to="/dashboard"
-                  className="flex w-full items-center gap-1"
-                >
-                  <ComputerDesktopIcon className="h-6 w-6" />
-                  Dashboard
-                </RouterLink>
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              className="flex cursor-pointer items-center gap-1"
-              onClick={logOut}
-            >
-              <ArrowLeftStartOnRectangleIcon className="h-6 w-6" />
-              <span className="flex-1">Log out</span>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </nav>
       )}
     </div>
   );
