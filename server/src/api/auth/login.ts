@@ -15,6 +15,7 @@ import {
 } from "@/lib/auth";
 import { refreshTokenCookieOptions } from "@/config/auth";
 import { rateLimit } from "@/config/ratelimit";
+import { generateStreamKey } from "@/lib/stream/utils";
 
 const client = new OAuth2Client(GOOGLE_CLIENT_ID);
 const router = express.Router();
@@ -85,13 +86,25 @@ router.post(
                                     feedback: usernameResult.feedback,
                                 })
                             );
-                        const uniqueUsername = usernameResult.data;
-
+                        const username = usernameResult.data;
+                        const streamKeyResult = await generateStreamKey(
+                            ticketPayload.sub
+                        );
+                        if (!streamKeyResult.success)
+                            return next(
+                                new AppError({
+                                    httpCode: HttpCode.INTERNAL_SERVER_ERROR,
+                                    description: streamKeyResult.error,
+                                    feedback: streamKeyResult.feedback,
+                                })
+                            );
+                        const streamKey = streamKeyResult.data;
                         await tx.insert(users).values({
                             userId: ticketPayload.sub,
                             email: ticketPayload.email!,
-                            username: uniqueUsername,
                             profilePicture: ticketPayload.picture,
+                            username,
+                            streamKey,
                         });
                     }
                     if (
@@ -135,7 +148,7 @@ router.post(
                 return next(
                     new AppError({
                         httpCode: HttpCode.INTERNAL_SERVER_ERROR,
-                        description: "Database error",
+                        description: "An error occurred",
                         feedback: `${e as Error}`,
                     })
                 );

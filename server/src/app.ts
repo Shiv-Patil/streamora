@@ -10,8 +10,9 @@ import api from "@/api";
 import { AppError, HttpCode } from "@/config/errors";
 import { errorHandler } from "@/middleware/errorhandler";
 import logger from "@/lib/logger";
+import { DOCKER, STATIC_DIR, STREAM_MEDIA_ROOT } from "@/config/environment";
+import nms from "@/lib/nms";
 import { rateLimit } from "@/config/ratelimit";
-import { DOCKER, STATIC_DIR } from "./config/environment";
 
 const app = express();
 if (DOCKER) {
@@ -26,7 +27,6 @@ app.disable("x-powered-by");
 app.use(cookieParser());
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
-app.use(rateLimit());
 
 app.use(
     "/file",
@@ -41,6 +41,21 @@ app.use(
         res.status(HttpCode.NOT_FOUND).send();
     }
 );
+app.use(
+    "/stream",
+    express.static(STREAM_MEDIA_ROOT, {
+        acceptRanges: true,
+        extensions: ["m3u8", "ts"],
+        setHeaders(res) {
+            res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+        },
+    }),
+    (_req, res, _next) => {
+        res.status(HttpCode.NOT_FOUND).send();
+    }
+);
+
+app.use(rateLimit());
 app.use("/api/", api);
 
 // catch 404
@@ -63,5 +78,7 @@ process.on("uncaughtException", (error) => {
     logger.error(`Uncaught Exception`);
     errorHandler.handleError(error);
 });
+
+nms.run();
 
 export default app;

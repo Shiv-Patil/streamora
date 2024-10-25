@@ -43,10 +43,6 @@ function normalizePort(val: string | undefined) {
     return defaultPort;
 }
 
-export const REDIS_URL = DOCKER
-    ? "redis://redis:6379"
-    : (process.env.REDIS_URL ?? "redis://localhost:6379");
-
 export const CONFIG_PG = {
     host: DOCKER ? "postgres" : (process.env.DB_HOST ?? "localhost"),
     user: process.env.DB_USER ?? "localhost",
@@ -56,6 +52,26 @@ export const CONFIG_PG = {
     ssl: false,
 };
 
+/**
+|----------------------------------------------------------------------------------------|
+    Redis
+|----------------------------------------------------------------------------------------|
+*/
+
+export const REDIS_URL = DOCKER
+    ? "redis://redis:6379"
+    : (process.env.REDIS_URL ?? "redis://localhost:6379");
+
 export const REDIS_KEYS = {
     lastSessionInvalidation: "lastSessionInvalidation",
 };
+
+/**
+|----------------------------------------------------------------------------------------|
+    Node media server
+|----------------------------------------------------------------------------------------|
+*/
+
+export const RTMP_PORT = 1935;
+export const RTMP_CHUNK_SIZE = 60000;
+export const STREAM_MEDIA_ROOT = path.join(__dirname, "..", "..", "streams");

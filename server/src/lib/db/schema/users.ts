@@ -1,4 +1,4 @@
-import { relations, sql } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 import {
     pgTable,
     text,
@@ -22,13 +22,9 @@ export const users = pgTable("users", {
         .array()
         .notNull()
         .default(sql`'{}'::stream_category[]`),
+    currentStreamId: integer("current_stream_id"),
+    streamKey: text("stream_key").notNull().unique(),
 });
-
-export const usersRelations = relations(users, ({ many }) => ({
-    refreshTokens: many(refreshTokens, {
-        relationName: "user",
-    }),
-}));
 
 export const followers = pgTable(
     "followers",
@@ -56,11 +52,3 @@ export const refreshTokens = pgTable("refresh_tokens", {
     used: boolean("used").notNull().default(false),
     expiresAt: timestamp("expires_at").notNull(),
 });
-
-export const refreshTokensRelations = relations(refreshTokens, ({ one }) => ({
-    user: one(users, {
-        fields: [refreshTokens.userId],
-        references: [users.userId],
-        relationName: "user",
-    }),
-}));
