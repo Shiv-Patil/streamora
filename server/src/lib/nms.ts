@@ -139,7 +139,7 @@ async function startTranscoding(streamPath: string, username: string) {
                     "-sc_threshold 0", // Disable scene change detection
                     "-hls_time 1", // Segment duration
                     "-hls_list_size 3", // Number of segments in playlist
-                    "hls_segment_type fmp4",
+                    "-hls_segment_type fmp4",
                     "-hls_flags delete_segments+append_list+program_date_time+independent_segments",
                     "-hls_start_number_source epoch",
                     "-strftime 1",
@@ -154,7 +154,7 @@ async function startTranscoding(streamPath: string, username: string) {
                 })
                 .on("error", (err) => {
                     logger.debug(
-                        `[FFmpeg] ${quality.name} transcoding ended ${(err as Error).stack}`
+                        `[FFmpeg] ${quality.name} transcoding ended as error`
                     );
                     reject(err);
                 })
@@ -165,6 +165,24 @@ async function startTranscoding(streamPath: string, username: string) {
                 .run();
         });
     });
+
+    const thumbnailService = () =>
+        new Promise((resolve, reject) => {
+            const command = ffmpeg(path.join(mediaRoot, "index.m3u8"))
+                .inputFormat("hls")
+                .outputOptions(["-q:v 2", "-an", "-frames:v 1", "-f image2"])
+                .size("400x?")
+                .output(path.join(mediaRoot, "thumbnail.jpeg"));
+            command
+                .on("error", () => {
+                    reject();
+                })
+                .on("end", () => {
+                    logger.debug(`[FFmpeg] thumbnail ended`);
+                    resolve(null);
+                })
+                .run();
+        });
 
     // Generate master playlist
     const masterPlaylist = [
@@ -183,8 +201,19 @@ async function startTranscoding(streamPath: string, username: string) {
         masterPlaylist
     );
 
-    // Wait for all transcoding processes to start
+    // run thumbnail service
+    const intervalId = setInterval(async () => {
+        try {
+            await thumbnailService();
+        } catch {
+            clearInterval(intervalId);
+        }
+    }, 10000);
+
+    // Wait for all transcoding processes
     await Promise.allSettled(transcodePromises);
+
+    clearInterval(intervalId);
 }
 
 const asyncEventWrapper = (
@@ -209,26 +238,6 @@ nms.on(
                     .where(eq(users.streamKey, streamKey));
                 if (!usersWithKey.length) throw new Error("Invalid stream key");
                 const user = usersWithKey[0];
-                const newStream = await tx
-                    .insert(streams)
-                    .values({
-                        userId: user.userId,
-                    })
-                    .returning();
-                if (!newStream.length)
-                    throw new Error("Couldn't insert into stream");
-                if (
-                    !(
-                        await tx
-                            .update(users)
-                            .set({
-                                currentStreamId: newStream[0].id,
-                            })
-                            .where(eq(users.streamKey, streamKey))
-                            .returning()
-                    ).length
-                )
-                    throw new Error("Couldn't update user");
                 username = user.username;
             });
             logger.debug(
@@ -254,46 +263,20 @@ nms.on(
             `id=${id} StreamPath=${StreamPath}`
         );
         try {
-            await db.transaction(async (tx) => {
-                const selectUser = await tx
-                    .select()
-                    .from(users)
-                    .where(eq(users.streamKey, streamKey));
-                if (!selectUser.length) throw new Error("Invalid stream key");
-                const user = selectUser[0];
-                try {
-                    const mediaRoot = path.join(
-                        STREAM_MEDIA_ROOT,
-                        user.username
-                    );
-                    await fs.promises.rm(mediaRoot, {
-                        recursive: true,
-                        force: true,
-                    });
-                } catch (err) {
-                    logger.error(
-                        `[Cleanup] Error removing media files: ${err as Error}`
-                    );
-                }
-                if (user.currentStreamId === null)
-                    throw new Error("Current stream is null");
-                await tx
-                    .update(users)
-                    .set({
-                        currentStreamId: null,
-                    })
-                    .where(eq(users.streamKey, streamKey));
-                await tx
-                    .update(streams)
-                    .set({
-                        endedAt: new Date(),
-                    })
-                    .where(eq(streams.id, user.currentStreamId));
+            const selectUser = await db
+                .select()
+                .from(users)
+                .where(eq(users.streamKey, streamKey));
+            if (!selectUser.length) throw new Error("Invalid stream key");
+            const user = selectUser[0];
+
+            const mediaRoot = path.join(STREAM_MEDIA_ROOT, user.username);
+            await fs.promises.rm(mediaRoot, {
+                recursive: true,
+                force: true,
             });
         } catch (e) {
-            logger.error(
-                `Failed to update user live state: ${(e as Error).message}`
-            );
+            logger.error(`[Cleanup] Error removing media files: ${e as Error}`);
         }
     })
 );
