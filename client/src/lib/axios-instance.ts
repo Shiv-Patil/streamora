@@ -1,9 +1,8 @@
 import axios, { InternalAxiosRequestConfig } from "axios";
 import {
   ACCESS_TOKEN_KEY,
-  DEV_API_URL,
+  BASE_API_URL,
   LOGIN_ENDPOINT,
-  PROD_API_URL,
   REFRESH_ENDPOINT,
 } from "@/lib/constants";
 import { toast } from "sonner";
@@ -17,7 +16,7 @@ const onRefresh = (token: string) => {
 };
 
 const api = axios.create({
-  baseURL: process.env.NODE_ENV === "production" ? PROD_API_URL : DEV_API_URL,
+  baseURL: BASE_API_URL,
   withCredentials: true,
 });
 
@@ -68,12 +67,12 @@ api.interceptors.response.use(
               originalRequest.headers["Authorization"] =
                 `Bearer ${accessToken}`;
               return api(originalRequest);
-            } catch {
+            } catch (error) {
               localStorage.removeItem(ACCESS_TOKEN_KEY);
               isRefreshing = false;
               refreshSubscribers = [];
               window.location.reload();
-              return Promise.reject();
+              return Promise.reject(error as Error);
             }
           } else {
             return new Promise((resolve) => {

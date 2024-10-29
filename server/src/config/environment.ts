@@ -63,7 +63,10 @@ export const REDIS_URL = DOCKER
     : (process.env.REDIS_URL ?? "redis://localhost:6379");
 
 export const REDIS_KEYS = {
-    lastSessionInvalidation: "lastSessionInvalidation",
+    lastSessionInvalidation: (userId: string) =>
+        `lastSessionInvalidation:${userId}`,
+    channelInfoCache: (username: string) => `channelInfo:${username}`,
+    streamViewers: (streamId: number) => `streamViewers:${streamId}`,
 };
 
 /**

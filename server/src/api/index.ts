@@ -1,6 +1,9 @@
 import express from "express";
+import channelRouter from "./channel";
 import authRouter from "./auth";
 import userRouter from "./user";
+import streamRouter from "./stream";
+
 const router = express.Router();
 
 // Public routes
@@ -9,6 +12,8 @@ router.get("/hello", (_req, res) => {
         message: "Hello!",
     });
 });
+
+router.use("/channel", channelRouter);
 
 // Auth routes and middleware
 router.use(authRouter);
@@ -21,5 +26,6 @@ router.get("/protected", (_req, res) => {
 });
 
 router.use("/user", userRouter);
+router.use("/stream", streamRouter);
 
 export default router;

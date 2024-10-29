@@ -1,6 +1,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { cn } from "@/lib/utils";
 import defaultProfilePicture from "@/assets/default_profilePicture.webp";
+import { Skeleton } from "./ui/skeleton";
 
 const UserAvatar = ({
   profilePicture,
@@ -9,9 +10,9 @@ const UserAvatar = ({
   profilePicture?: string | null;
   className?: string;
 }) => {
-  return (
+  return profilePicture ? (
     <Avatar className={cn("h-11 w-11 overflow-clip", className)}>
-      <AvatarImage src={profilePicture || ""} />
+      <AvatarImage src={profilePicture} />
       <AvatarFallback className="bg-transparent">
         <img
           src={defaultProfilePicture}
@@ -19,6 +20,8 @@ const UserAvatar = ({
         />
       </AvatarFallback>
     </Avatar>
+  ) : (
+    <Skeleton className={cn("h-11 w-11 rounded-full", className)} />
   );
 };
 

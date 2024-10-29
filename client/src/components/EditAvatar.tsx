@@ -56,7 +56,7 @@ const EditAvatar = () => {
       }
       setIsPreviewLoading(false);
     },
-    [setIsFileValid, setPreviewUrl, setIsPreviewLoading]
+    [setIsFileValid, setPreviewUrl, setIsPreviewLoading, previewUrl]
   );
 
   const handleImageError = useCallback(() => {
@@ -90,7 +90,7 @@ const EditAvatar = () => {
         else toast.error("Error updating profile picture");
       },
     });
-  }, [file, isFileValid, mutation.mutate]);
+  }, [file, isFileValid, mutation, queryClient, userProfile]);
 
   const handleFileChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {

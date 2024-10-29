@@ -12,6 +12,9 @@ export const usersRelations = relations(users, ({ many }) => ({
     following: many(followers, {
         relationName: "following",
     }),
+    streams: many(streams, {
+        relationName: "user",
+    }),
 }));
 
 export const refreshTokensRelations = relations(refreshTokens, ({ one }) => ({
@@ -37,8 +40,8 @@ export const followersRelations = relations(followers, ({ one }) => ({
 
 export const streamsRelations = relations(streams, ({ one }) => ({
     user: one(users, {
-        fields: [streams.userId],
-        references: [users.userId],
+        fields: [streams.userId, streams.username],
+        references: [users.userId, users.username],
         relationName: "user",
     }),
 }));

@@ -36,7 +36,7 @@ const authMiddleware = (req: Request, _res: Response, next: NextFunction) => {
         // check if sessions were invalidated
         try {
             const lastSessionInvalidation = await redisClient.get(
-                `${REDIS_KEYS.lastSessionInvalidation}:${parsed.data.userId}`
+                REDIS_KEYS.lastSessionInvalidation(parsed.data.userId)
             );
             if (
                 lastSessionInvalidation &&

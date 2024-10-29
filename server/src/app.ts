@@ -11,7 +11,6 @@ import { AppError, HttpCode } from "@/config/errors";
 import { errorHandler } from "@/middleware/errorhandler";
 import logger from "@/lib/logger";
 import { DOCKER, STATIC_DIR, STREAM_MEDIA_ROOT } from "@/config/environment";
-import nms from "@/lib/nms";
 import { rateLimit } from "@/config/ratelimit";
 
 const app = express();
@@ -82,7 +81,5 @@ process.on("uncaughtException", (error) => {
     logger.error(`Uncaught Exception`);
     errorHandler.handleError(error);
 });
-
-nms.run();
 
 export default app;

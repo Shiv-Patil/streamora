@@ -59,3 +59,12 @@
     @apply rounded-full border-[1px] border-solid border-transparent bg-border bg-clip-padding;
   }
 }
+
+@layer components {
+  .banner-bg {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 100'%3E %3Cdefs%3E%3Cpattern id='word-pattern' x='0' y='0' width='400' height='400' patternUnits='userSpaceOnUse'%3E%3Ctext x='50' y='50' font-family='sans-serif' font-size='32' fill='grey' transform='rotate(-30 150,70)'%3EStreamora%3C/text%3E%3C/pattern%3E%3C/defs%3E%3Crect width='100%25' height='100%25' fill='url(%23word-pattern)'/%3E%3C/svg%3E");
+    background-size: 200px 100px;
+    background-repeat: repeat;
+    background-clip: border-box;
+  }
+}

@@ -1,6 +1,8 @@
+import { REDIS_KEYS } from "@/config/environment";
 import { AppError, HttpCode } from "@/config/errors";
 import db from "@/lib/db";
 import { users } from "@/lib/db/schema/users";
+import redisClient from "@/lib/redis";
 import assert from "assert";
 import { eq } from "drizzle-orm";
 import express from "express";
@@ -41,6 +43,9 @@ router.post(
                         description: "User does not exist",
                     })
                 );
+            await redisClient.del(
+                REDIS_KEYS.channelInfoCache(updated[0].username)
+            );
             res.status(HttpCode.OK).json(updated[0].bio);
         } catch (e) {
             return next(

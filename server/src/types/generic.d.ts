@@ -6,8 +6,9 @@ type ReturnData<T> =
     | { success: true; data: T }
     | { success: false; error: string; feedback?: string };
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 type Transaction = PgTransaction<
     NodePgQueryResultHKT,
-    Record<string, never>,
-    ExtractTablesWithRelations<Record<string, never>>
+    any,
+    ExtractTablesWithRelations<any>
 >;

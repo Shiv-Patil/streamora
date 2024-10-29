@@ -1,4 +1,4 @@
-import { HOSTNAME, STATIC_DIR } from "@/config/environment";
+import { HOSTNAME, REDIS_KEYS, STATIC_DIR } from "@/config/environment";
 import { AppError, HttpCode } from "@/config/errors";
 import db from "@/lib/db";
 import { users } from "@/lib/db/schema/users";
@@ -12,6 +12,7 @@ import multer from "multer";
 import path from "path";
 import sharp from "sharp";
 import fs from "fs";
+import redisClient from "@/lib/redis";
 
 const router = express.Router();
 const MAX_UPLOAD_SIZE = 2 * 1024 * 1024;
@@ -138,9 +139,12 @@ router.post(
                 await deleteFile(filepath);
                 throw new Error("No rows updated in database");
             }
+
+            await redisClient.del(REDIS_KEYS.channelInfoCache(old[0].username));
+
             res.status(200).json(fileURL);
         } catch (err) {
-            deleteFile(filepath).catch();
+            void deleteFile(filepath).catch();
             return next(
                 new AppError({
                     httpCode: HttpCode.INTERNAL_SERVER_ERROR,

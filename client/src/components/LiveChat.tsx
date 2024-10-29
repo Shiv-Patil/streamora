@@ -50,7 +50,7 @@ const LiveChat: React.FC<LiveChatProps> = ({
               username: `User${Math.floor(Math.random() * 1000)}`,
               message: `Message from ${format(timestamp, "HH:mm:ss")}`,
               timestamp: timestamp.toISOString(),
-              color: `white`,
+              color: `blue`,
             };
           }
         );
@@ -67,7 +67,7 @@ const LiveChat: React.FC<LiveChatProps> = ({
   // Initial load
   useEffect(() => {
     void fetchMessages();
-  }, []);
+  });
 
   const checkIfNearBottom = useCallback(() => {
     if (!chatContainerRef.current) return true;
@@ -78,12 +78,9 @@ const LiveChat: React.FC<LiveChatProps> = ({
   }, []);
 
   // Debounced scroll handler
-  const handleScroll = useCallback(
-    debounce(() => {
-      setIsNearBottom(checkIfNearBottom());
-    }, 150),
-    [setIsNearBottom]
-  );
+  const handleScroll = debounce(() => {
+    setIsNearBottom(checkIfNearBottom());
+  }, 150);
 
   // Scroll event listener
   useEffect(() => {
@@ -91,14 +88,14 @@ const LiveChat: React.FC<LiveChatProps> = ({
     if (!chatContainer) return;
     chatContainer.addEventListener("scroll", handleScroll);
     return () => chatContainer.removeEventListener("scroll", handleScroll);
-  }, [chatContainerRef.current, handleScroll]);
+  }, [handleScroll]);
 
   // New message
   useEffect(() => {
     const chatContainer = chatContainerRef.current;
     if (!chatContainer || !isNearBottom) return;
     chatContainer.scrollTop = chatContainer.scrollHeight;
-  }, [messages]);
+  }, [messages, isNearBottom]);
 
   const handleSendMessage = useCallback(
     (e: React.FormEvent) => {
@@ -123,7 +120,7 @@ const LiveChat: React.FC<LiveChatProps> = ({
         chatContainer.scrollTop = chatContainer.scrollHeight;
       }, 10);
     },
-    [chatContainerRef.current, onSendMessage, newMessage]
+    [onSendMessage, newMessage]
   );
 
   return (
@@ -145,13 +142,16 @@ const LiveChat: React.FC<LiveChatProps> = ({
         {/* Message list */}
         {messages.map((msg) => (
           <div key={msg.id} className="animate-fade-in">
-            <div className="flex items-end gap-1">
-              <span className="">{msg.username}</span>
-              <span className="text-sm text-muted-foreground">
+            <span className="text-sm" style={{ color: msg.color }}>
+              {msg.username}
+            </span>
+            :{" "}
+            <span className="text-sm text-foreground">
+              {msg.message} dwadfeava
+            </span>
+            {/* <span className="text-sm text-muted-foreground">
                 {format(new Date(msg.timestamp), "HH:mm")}
-              </span>
-            </div>
-            <p className="text-sm text-foreground">{msg.message}</p>
+              </span> */}
           </div>
         ))}
       </div>

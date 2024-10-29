@@ -96,7 +96,9 @@ router.post(
                                     eq(refreshTokens.userId, parsed.data.userId)
                                 );
                             await redisClient.set(
-                                `${REDIS_KEYS.lastSessionInvalidation}:${parsed.data.userId}`,
+                                REDIS_KEYS.lastSessionInvalidation(
+                                    parsed.data.userId
+                                ),
                                 `${Date.now() / 1000}`,
                                 {
                                     PX:

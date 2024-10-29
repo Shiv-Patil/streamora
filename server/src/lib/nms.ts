@@ -3,7 +3,6 @@ import NodeMediaServer from "node-media-server";
 import db from "@/lib/db";
 import { users } from "@/lib/db/schema/users";
 import { eq } from "drizzle-orm";
-import { streams } from "@/lib/db/schema/streams";
 import logger from "./logger";
 import ffmpeg from "fluent-ffmpeg";
 import path from "path";
@@ -174,11 +173,10 @@ async function startTranscoding(streamPath: string, username: string) {
                 .size("400x?")
                 .output(path.join(mediaRoot, "thumbnail.jpeg"));
             command
-                .on("error", () => {
-                    reject();
+                .on("error", (err) => {
+                    reject(err);
                 })
                 .on("end", () => {
-                    logger.debug(`[FFmpeg] thumbnail ended`);
                     resolve(null);
                 })
                 .run();
@@ -202,13 +200,9 @@ async function startTranscoding(streamPath: string, username: string) {
     );
 
     // run thumbnail service
-    const intervalId = setInterval(async () => {
-        try {
-            await thumbnailService();
-        } catch {
-            clearInterval(intervalId);
-        }
-    }, 10000);
+    const intervalId = setInterval(() => {
+        void thumbnailService().catch(() => clearInterval(intervalId));
+    }, 20000);
 
     // Wait for all transcoding processes
     await Promise.allSettled(transcodePromises);
@@ -239,6 +233,9 @@ nms.on(
                 if (!usersWithKey.length) throw new Error("Invalid stream key");
                 const user = usersWithKey[0];
                 username = user.username;
+
+                if (user.currentStreamId === null)
+                    throw new Error("User is not currently streaming");
             });
             logger.debug(
                 "[NodeEvent on prePublish]",

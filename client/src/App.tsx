@@ -10,6 +10,7 @@ import { GOOGLE_CLIENT_ID } from "./lib/constants";
 import DashboardLayout from "@/layouts/Dashboard";
 import Stream from "@/views/dashboard/Stream";
 import Profile from "@/views/dashboard/Profile";
+import Channel from "@/views/Channel";
 
 const queryClient = new QueryClient();
 
@@ -31,7 +32,7 @@ const App = () => {
               </Route>
               <Route path="/" element={<BrowseLayout />}>
                 <Route path="/" element={<Home />} />
-                <Route path="/:user" element={<Home />} />
+                <Route path="/:username" element={<Channel />} />
               </Route>
               <Route path="*" element={<NotFoundPage />} />
             </Routes>

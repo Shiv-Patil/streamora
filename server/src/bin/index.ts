@@ -5,6 +5,7 @@ import http from "http";
 import { PORT } from "../config/environment";
 import logger from "../lib/logger";
 import { type Duplex } from "stream";
+import nms from "@/lib/nms";
 
 function normalizePort(val: string) {
     const port = parseInt(val, 10);
@@ -26,6 +27,8 @@ server.listen(port, () => {
     );
 });
 server.on("clientError", onClientError);
+
+nms.run();
 
 if (import.meta.hot) {
     /* eslint-disable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call */

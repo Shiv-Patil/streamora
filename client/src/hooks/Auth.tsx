@@ -63,11 +63,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setAuthState(parseJwt(accessToken));
   }, [setAuthState]);
 
-  const logOut = useCallback(async () => {
-    try {
-      await api.post("/auth/logout");
-      updateAuthState(null);
-    } catch {}
+  const logOut = useCallback(() => {
+    void api.post("/auth/logout").catch();
+    updateAuthState(null);
   }, [updateAuthState]);
 
   const value: AuthContextType = {
