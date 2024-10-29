@@ -2,7 +2,7 @@ import { HOSTNAME, REDIS_KEYS, STATIC_DIR } from "@/config/environment";
 import { AppError, HttpCode } from "@/config/errors";
 import db from "@/lib/db";
 import { users } from "@/lib/db/schema/users";
-import { ReturnData } from "@/types/generic";
+import type { ReturnData } from "@/types/generic";
 import assert from "assert";
 import { createHash } from "crypto";
 import { eq } from "drizzle-orm";

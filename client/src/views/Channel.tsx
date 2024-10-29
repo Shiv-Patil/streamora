@@ -1,32 +1,10 @@
-import LiveVideoPlayer, {
-  type LiveVideoPlayerProps,
-} from "@/components/LiveVideoPlayer";
-import api from "@/lib/axios-instance";
-import { useQuery } from "@tanstack/react-query";
+import LiveVideoPlayer from "@/components/LiveVideoPlayer";
+import useChannel from "@/hooks/Channel";
 import { useParams } from "react-router-dom";
-
-const fetchChannel = async (
-  username: string
-): Promise<LiveVideoPlayerProps> => {
-  const res = await api.get<LiveVideoPlayerProps>(
-    `/channel?username=${username}`
-  );
-  return res.data;
-};
 
 function Channel() {
   const { username } = useParams();
-  const queryResult = useQuery(
-    [`channel:${username}`],
-    () => fetchChannel(username!),
-    {
-      staleTime: 1000 * 60,
-      retry: false,
-      onSuccess(data) {
-        console.log(data);
-      },
-    }
-  );
+  const queryResult = useChannel(username);
   return (
     <div className="relative mx-4 mb-4 flex min-h-full flex-1 flex-col">
       {queryResult.isError ? (

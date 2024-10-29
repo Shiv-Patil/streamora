@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from "express";
+import type { Request, Response, NextFunction } from "express";
 import { ACCESS_TOKEN_SECRET, REDIS_KEYS } from "@/config/environment";
 import jwt from "jsonwebtoken";
 import { z } from "zod";

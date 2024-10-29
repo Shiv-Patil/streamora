@@ -1,4 +1,4 @@
-import { isNull, sql } from "drizzle-orm";
+import { isNull } from "drizzle-orm";
 import {
     pgTable,
     text,
@@ -23,8 +23,10 @@ export const streams = pgTable(
         title: text("title").notNull(),
         peakViewers: integer("peak_viewers").notNull().default(0),
         category: streamCategory("category").notNull(),
-        startedAt: timestamp("started_at").notNull().defaultNow(),
-        endedAt: timestamp("ended_at"),
+        startedAt: timestamp("started_at", { withTimezone: true })
+            .notNull()
+            .defaultNow(),
+        endedAt: timestamp("ended_at", { withTimezone: true }),
     },
     (table) => ({
         isLiveIdx: index("is_live_idx")
@@ -48,5 +50,7 @@ export const chatMessages = pgTable("chat_messages", {
         .notNull()
         .references(() => users.userId, { onDelete: "cascade" }),
     message: text("message").notNull(),
-    createdAt: timestamp("created_at").notNull().defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+        .notNull()
+        .defaultNow(),
 });

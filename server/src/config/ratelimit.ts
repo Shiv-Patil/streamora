@@ -1,5 +1,8 @@
 import requestIp from "request-ip";
-import { rateLimit as expressRateLimit, Options } from "express-rate-limit";
+import {
+    rateLimit as expressRateLimit,
+    type Options,
+} from "express-rate-limit";
 import { RedisStore } from "rate-limit-redis";
 import redisClient from "@/lib/redis";
 import logger from "@/lib/logger";

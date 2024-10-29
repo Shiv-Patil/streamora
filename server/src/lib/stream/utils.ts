@@ -1,4 +1,4 @@
-import { ReturnData } from "@/types/generic";
+import type { ReturnData } from "@/types/generic";
 import crypto from "crypto";
 import { users } from "@/lib/db/schema/users";
 import db from "@/lib/db";

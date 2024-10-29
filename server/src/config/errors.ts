@@ -1,4 +1,4 @@
-import { AppErrorArgs } from "@/types/errors";
+import type { AppErrorArgs } from "@/types/errors";
 
 export enum HttpCode {
     OK = 200,

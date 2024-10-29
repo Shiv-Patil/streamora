@@ -34,7 +34,7 @@ export interface LiveVideoPlayerProps {
   streamerBio?: string;
   streamTitle?: string;
   streamCategory?: string;
-  streamStartedAt?: Date;
+  streamStartedAt?: number;
   viewerCount?: number;
 }
 
@@ -60,7 +60,7 @@ interface Quality {
 }
 
 type PlayerError = {
-  type: "network" | "media" | "fatal";
+  type: "disconnected" | "network" | "media" | "fatal";
   message: string;
   retry?: () => void;
 };
@@ -107,7 +107,7 @@ const LiveVideoPlayer: React.FC<LiveVideoPlayerProps> = ({
   const [playerState, setPlayerState] = useState<PlayerState>({
     isPlaying: false,
     isLoading: true,
-    isMuted: false,
+    isMuted: true,
     error: null,
     showQualityMenu: false,
     currentQuality: -1,
@@ -119,14 +119,10 @@ const LiveVideoPlayer: React.FC<LiveVideoPlayerProps> = ({
 
   const handleError = (error: PlayerError) => {
     setPlayerState((prev) => ({ ...prev, error: error.message }));
-    if (error.type === "network") {
-      // Implement exponential backoff for network errors
-      setPlayerState((state) => ({
-        ...state,
-        error: "Network error",
-      }));
-    } else if (error.retry) {
-      error.retry();
+    if (error.type === "disconnected") {
+      setTimeout(() => {
+        error.retry?.();
+      }, 5000);
     }
   };
 
@@ -197,7 +193,8 @@ const LiveVideoPlayer: React.FC<LiveVideoPlayerProps> = ({
       } else {
         video.pause();
       }
-    } catch {
+    } catch (err) {
+      console.error(err);
       handleError({
         type: "media",
         message: "Playback failed",
@@ -260,7 +257,11 @@ const LiveVideoPlayer: React.FC<LiveVideoPlayerProps> = ({
         });
 
         hls.on(Hls.Events.MANIFEST_PARSED, () => {
-          setPlayerState((prev) => ({ ...prev, isLoading: false }));
+          setPlayerState((prev) => ({
+            ...prev,
+            isLoading: false,
+            error: null,
+          }));
         });
 
         hls.on(Hls.Events.LEVEL_SWITCHED, () => {
@@ -272,15 +273,19 @@ const LiveVideoPlayer: React.FC<LiveVideoPlayerProps> = ({
             switch (data.type) {
               case Hls.ErrorTypes.NETWORK_ERROR:
                 handleError({
-                  type: "network",
-                  message: data.reason ?? "",
-                  retry: () => hls.startLoad(),
+                  type:
+                    data.response?.code === 404 ? "disconnected" : "network",
+                  message:
+                    data.response?.code === 404
+                      ? "Streamer disconnected"
+                      : (data.reason ?? ""),
+                  retry: () => hls.loadSource(streamUrl),
                 });
                 break;
               case Hls.ErrorTypes.MEDIA_ERROR:
                 handleError({
                   type: "media",
-                  message: "Media error, recovering...",
+                  message: "Media error",
                   retry: () => hls.recoverMediaError(),
                 });
                 break;
@@ -390,6 +395,7 @@ const LiveVideoPlayer: React.FC<LiveVideoPlayerProps> = ({
               ref={videoRef}
               className="h-full w-full"
               playsInline
+              autoPlay
               muted={playerState.isMuted}
             />
 
@@ -604,7 +610,7 @@ const LiveVideoPlayer: React.FC<LiveVideoPlayerProps> = ({
                 className="h-16 w-16"
                 profilePicture={streamerProfilePicture}
               />
-              <div className="flex flex-1 flex-col items-start gap-2">
+              <div className="flex flex-1 flex-col items-start gap-1">
                 <span className="text-lg">
                   {streamerUsername ? (
                     streamerUsername
@@ -613,7 +619,7 @@ const LiveVideoPlayer: React.FC<LiveVideoPlayerProps> = ({
                   )}
                 </span>
                 {isLive ? (
-                  <>
+                  <div className="flex flex-col items-start gap-2">
                     <span className="flex flex-col self-stretch text-sm">
                       {streamTitle ? (
                         streamTitle
@@ -626,12 +632,12 @@ const LiveVideoPlayer: React.FC<LiveVideoPlayerProps> = ({
                         {streamCategory}
                       </span>
                     ) : null}
-                  </>
+                  </div>
                 ) : null}
               </div>
             </div>
 
-            <div className="items-right flex flex-col gap-2">
+            <div className="flex flex-col items-end gap-2">
               <Button
                 className="flex gap-2 rounded-lg"
                 disabled={isFollowing}
@@ -648,7 +654,7 @@ const LiveVideoPlayer: React.FC<LiveVideoPlayerProps> = ({
                   </>
                 )}
               </Button>
-              <span className="text-xs">
+              <span className="font-mono text-xs">
                 {streamStartedAt ? (
                   <TimeSince startTime={streamStartedAt} />
                 ) : null}

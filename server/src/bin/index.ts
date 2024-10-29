@@ -31,7 +31,6 @@ server.on("clientError", onClientError);
 nms.run();
 
 if (import.meta.hot) {
-    /* eslint-disable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call */
     function closeServer() {
         process.removeAllListeners();
         server.close();
@@ -44,7 +43,6 @@ if (import.meta.hot) {
         closeServer();
         logger.info("HMR: DISPOSE");
     });
-    /* eslint-enable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call */
 }
 
 function onClientError(err: Error, socket: Duplex) {

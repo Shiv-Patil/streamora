@@ -95,7 +95,7 @@ router.get(
                 streamerFollowers: channel.followerCount,
                 streamTitle: streamData?.title,
                 streamCategory: streamData?.category,
-                streamStartedAt: streamData?.startedAt,
+                streamStartedAt: streamData?.startedAt.getTime(),
                 viewerCount: streamData?.viewerCount,
             };
 

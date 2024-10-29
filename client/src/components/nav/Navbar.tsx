@@ -95,7 +95,7 @@ const Navbar = () => {
           <DropdownMenu>
             <DropdownMenuTrigger>
               <UserAvatar
-                profilePicture={userProfile?.profilePicture || ""}
+                profilePicture={userProfile?.profilePicture}
                 className="cursor-pointer bg-card shadow-md"
               />
             </DropdownMenuTrigger>

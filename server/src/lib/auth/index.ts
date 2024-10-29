@@ -9,8 +9,8 @@ import {
 } from "@/config/environment";
 import { users } from "@/lib/db/schema/users";
 import { eq, like } from "drizzle-orm";
-import { JwtPayload } from "@/types/auth";
-import { ReturnData, Transaction } from "@/types/generic";
+import type { JwtPayload } from "@/types/auth";
+import type { ReturnData, Transaction } from "@/types/generic";
 
 export const generateAccessToken = (
     userId: string,

@@ -10,9 +10,9 @@ const UserAvatar = ({
   profilePicture?: string | null;
   className?: string;
 }) => {
-  return profilePicture ? (
+  return profilePicture !== undefined ? (
     <Avatar className={cn("h-11 w-11 overflow-clip", className)}>
-      <AvatarImage src={profilePicture} />
+      <AvatarImage src={profilePicture ?? defaultProfilePicture} />
       <AvatarFallback className="bg-transparent">
         <img
           src={defaultProfilePicture}

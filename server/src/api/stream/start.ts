@@ -2,6 +2,7 @@ import { REDIS_KEYS } from "@/config/environment";
 import { AppError, HttpCode } from "@/config/errors";
 import { rateLimit } from "@/config/ratelimit";
 import db from "@/lib/db";
+import { streamCategory, type StreamCateogry } from "@/lib/db/schema/enums";
 import { streams } from "@/lib/db/schema/streams";
 import { users } from "@/lib/db/schema/users";
 import redisClient from "@/lib/redis";
@@ -16,7 +17,14 @@ const router = express.Router();
 
 const bodySchema = z.object({
     title: z.string().trim().min(6),
-    category: z.string().trim(),
+    category: z
+        .string()
+        .trim()
+        .refine(
+            (val): val is StreamCateogry =>
+                (streamCategory.enumValues as string[]).includes(val),
+            "Invalid category"
+        ),
 });
 
 router.post(
@@ -59,6 +67,7 @@ router.post(
                         .insert(streams)
                         .values({
                             userId: user.userId,
+                            username: user.username,
                             title: parsed.data.title,
                             category: parsed.data.category,
                         })

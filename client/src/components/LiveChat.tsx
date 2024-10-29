@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
-import { format } from "date-fns";
 import { debounce } from "lodash";
 import { LoadingSpinner } from "./ui/spinner";
 import { cn } from "@/lib/utils";
@@ -26,48 +25,43 @@ const LiveChat: React.FC<LiveChatProps> = ({
 }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [hasMore] = useState(true);
+  const [loading] = useState(false);
+  // const [hasMore] = useState(true);
 
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const [isNearBottom, setIsNearBottom] = useState(true);
 
-  const fetchMessages = useCallback(
-    async (beforeId: string | null = null) => {
-      if (loading || !hasMore) return;
-      setLoading(true);
-      try {
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-        const newMessages: ChatMessage[] = Array.from(
-          { length: 10 },
-          (_, i) => {
-            const timestamp = new Date();
-            timestamp.setMinutes(
-              timestamp.getMinutes() - (beforeId ? parseInt(beforeId) : 0) - i
-            );
-            return {
-              id: `${timestamp.getTime()}`,
-              username: `User${Math.floor(Math.random() * 1000)}`,
-              message: `Message from ${format(timestamp, "HH:mm:ss")}`,
-              timestamp: timestamp.toISOString(),
-              color: `blue`,
-            };
-          }
-        );
-        setMessages((prev) => [...newMessages, ...prev]);
-      } catch (error) {
-        console.error("Error fetching messages:", error);
-      } finally {
-        setLoading(false);
-      }
-    },
-    [loading, hasMore]
-  );
-
-  // Initial load
-  useEffect(() => {
-    void fetchMessages();
-  });
+  // const fetchMessages = useCallback(
+  //   async (beforeId: string | null = null) => {
+  //     if (loading || !hasMore) return;
+  //     setLoading(true);
+  //     try {
+  //       await new Promise((resolve) => setTimeout(resolve, 2000));
+  //       const newMessages: ChatMessage[] = Array.from(
+  //         { length: 10 },
+  //         (_, i) => {
+  //           const timestamp = new Date();
+  //           timestamp.setMinutes(
+  //             timestamp.getMinutes() - (beforeId ? parseInt(beforeId) : 0) - i
+  //           );
+  //           return {
+  //             id: `${timestamp.getTime()}`,
+  //             username: `User${Math.floor(Math.random() * 1000)}`,
+  //             message: `Message from ${format(timestamp, "HH:mm:ss")}`,
+  //             timestamp: timestamp.toISOString(),
+  //             color: `blue`,
+  //           };
+  //         }
+  //       );
+  //       setMessages((prev) => [...newMessages, ...prev]);
+  //     } catch (error) {
+  //       console.error("Error fetching messages:", error);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   },
+  //   [loading, hasMore]
+  // );
 
   const checkIfNearBottom = useCallback(() => {
     if (!chatContainerRef.current) return true;
