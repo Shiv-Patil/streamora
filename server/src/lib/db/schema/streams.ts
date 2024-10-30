@@ -17,9 +17,6 @@ export const streams = pgTable(
         userId: text("user_id")
             .notNull()
             .references(() => users.userId, { onDelete: "cascade" }),
-        username: text("username")
-            .notNull()
-            .references(() => users.username, { onDelete: "cascade" }),
         title: text("title").notNull(),
         peakViewers: integer("peak_viewers").notNull().default(0),
         category: streamCategory("category").notNull(),
@@ -33,7 +30,7 @@ export const streams = pgTable(
             .on(table.endedAt)
             .where(isNull(table.endedAt)),
         streamerIdx: index("streamer_idx")
-            .on(table.endedAt, table.userId, table.username)
+            .on(table.endedAt, table.userId)
             .where(isNull(table.endedAt)),
         categoryIdx: index("category_idx")
             .on(table.category, table.endedAt)

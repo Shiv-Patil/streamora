@@ -13,6 +13,24 @@ import defaultProfileBanner from "@/assets/banner.png";
 import { Skeleton } from "@/components/ui/skeleton";
 import EditableFieldSection from "@/components/EditableFieldSection";
 import { z } from "zod";
+import { isAxiosError } from "axios";
+import useChannel from "@/hooks/Channel";
+
+const sanitizeUsername = (input: string, replacement = "_"): string => {
+  let sanitized = input.trim().toLowerCase();
+  sanitized = sanitized.replace(/[^a-zA-Z0-9_-]/g, replacement);
+  sanitized = sanitized.substring(0, 69);
+  return sanitized;
+};
+
+const usernameSchema = z
+  .string()
+  .min(1)
+  .max(69)
+  .refine(
+    (arg) => arg === sanitizeUsername(arg),
+    "Only lowercase letters, numbers, underscores, and dashes are allowed"
+  );
 
 const bioSchema = z
   .string()
@@ -22,25 +40,68 @@ const bioSchema = z
 
 const Profile = () => {
   const { data: userProfile } = useProfile();
-  const [usernameInput, setUsernameInput] = useState(userProfile?.username);
+  const { data: channel } = useChannel(userProfile?.username);
+
+  const [isEditingUsername, setIsEditingUsername] = useState(false);
+  const [usernameInput, setUsernameInput] = useState(
+    userProfile?.username || ""
+  );
   const [isEditingBio, setIsEditingBio] = useState(false);
-  const [bioInput, setBioInput] = useState(userProfile?.bio);
+  const [bioInput, setBioInput] = useState(userProfile?.bio || "");
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    setUsernameInput(userProfile?.username);
-    setBioInput(userProfile?.bio);
+    setUsernameInput(userProfile?.username || "");
+    setBioInput(userProfile?.bio || "");
   }, [userProfile]);
+
+  const usernameMutation = useMutation((newUsername: string) => {
+    return api.post<string>("/user/profile/username", {
+      username: newUsername,
+    });
+  });
 
   const bioMutation = useMutation((newBio: string) => {
     return api.post<string>("/user/profile/bio", { bio: newBio });
   });
 
+  const saveUsername = () => {
+    const parsed = usernameSchema.safeParse(usernameInput);
+
+    if (!parsed.success) {
+      return toast.error(parsed.error.errors[0].message);
+    }
+
+    usernameMutation.mutate(parsed.data, {
+      onSuccess: (res) => {
+        queryClient.setQueryData<Profile>(["profile"], (prev) =>
+          prev
+            ? {
+                ...prev,
+                username: res.data,
+              }
+            : undefined
+        );
+        setIsEditingUsername(false);
+        toast.success("Saved successfully");
+      },
+      onError: (err) => {
+        if (isAxiosError(err))
+          if (
+            (err.response?.data as { message: string }).message ===
+            "Username already exists"
+          )
+            return toast.error("Username already exists");
+        toast.error("Error updating username");
+      },
+    });
+  };
+
   const saveNewBio = () => {
     const parsed = bioSchema.safeParse(bioInput);
 
     if (!parsed.success) {
-      return toast.error(parsed.error.message);
+      return toast.error(parsed.error.errors[0].message);
     }
 
     bioMutation.mutate(parsed.data, {
@@ -97,11 +158,41 @@ const Profile = () => {
             )}
           </div>
         </EditableFieldSection>
-        <EditableFieldSection title="Username">
+        <EditableFieldSection
+          title="Username"
+          editButton={
+            <div className="flex items-center gap-2">
+              <Button
+                onClick={() => setIsEditingUsername((prev) => !prev)}
+                variant={"outline"}
+                disabled={
+                  channel?.isLive || usernameMutation.isLoading || !userProfile
+                }
+              >
+                {isEditingUsername ? "Cancel" : "Edit"}
+              </Button>
+              {isEditingUsername ? (
+                <Button
+                  onClick={() => saveUsername()}
+                  disabled={
+                    usernameInput === userProfile?.username ||
+                    usernameMutation.isLoading
+                  }
+                >
+                  {usernameMutation.isLoading ? (
+                    <LoadingSpinner />
+                  ) : (
+                    "Save Changes"
+                  )}
+                </Button>
+              ) : null}
+            </div>
+          }
+        >
           <Input
             value={usernameInput}
             onChange={(e) => setUsernameInput(e.target.value)}
-            disabled
+            disabled={!isEditingUsername}
           />
         </EditableFieldSection>
         <EditableFieldSection

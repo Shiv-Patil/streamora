@@ -40,8 +40,8 @@ export const followersRelations = relations(followers, ({ one }) => ({
 
 export const streamsRelations = relations(streams, ({ one }) => ({
     user: one(users, {
-        fields: [streams.userId, streams.username],
-        references: [users.userId, users.username],
+        fields: [streams.userId],
+        references: [users.userId],
         relationName: "user",
     }),
 }));

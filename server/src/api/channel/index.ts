@@ -12,7 +12,7 @@ import { fromError } from "zod-validation-error";
 const router = express.Router();
 
 const querySchema = z.object({
-    username: z.string().trim().min(2),
+    username: z.string().trim().toLowerCase().min(2),
 });
 
 router.get(
@@ -84,7 +84,7 @@ router.get(
                             REDIS_KEYS.streamViewers(channel.streams[0].id)
                         )) ?? "0";
                     const isConnected = !!(await redisClient.get(
-                        REDIS_KEYS.rtmpConnected(channel.username)
+                        REDIS_KEYS.rtmpConnected(channel.userId)
                     ));
                     streamData = channel.streams[0];
                     streamData.viewerCount = viewerCount;

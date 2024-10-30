@@ -21,6 +21,7 @@
         "db:generate": "drizzle-kit generate",
         "db:migrate": "drizzle-kit migrate",
         "lint-staged": "lint-staged",
+        "typecheck": "tsc --noEmit --strict",
         "prepare": "cd .. && husky server/.husky"
     },
     "dependencies": {

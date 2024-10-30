@@ -15,7 +15,7 @@ import {
 } from "@/lib/auth";
 import { refreshTokenCookieOptions } from "@/config/auth";
 import { rateLimit } from "@/config/ratelimit";
-import { generateStreamKey } from "@/lib/stream/utils";
+import { generateStreamKey } from "@/lib/auth";
 
 const client = new OAuth2Client(GOOGLE_CLIENT_ID);
 const router = express.Router();

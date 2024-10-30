@@ -26,7 +26,7 @@ router.post(
                     const user = data[0];
                     if (user.currentStreamId === null) return;
                     const isConnected = await redisClient.get(
-                        REDIS_KEYS.rtmpConnected(user.username)
+                        REDIS_KEYS.rtmpConnected(user.userId)
                     );
                     if (isConnected !== null)
                         throw new Error("Stream is connected");

@@ -9,14 +9,22 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { RTMP_URL } from "@/lib/constants";
-import useProfile from "@/hooks/Profile";
+import useProfile, { Profile } from "@/hooks/Profile";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import api from "@/lib/axios-instance";
 
 export default function Credentials() {
   const { data: userProfile } = useProfile();
   const [showStreamKey, setShowStreamKey] = useState(false);
 
   const rtmpUrl = RTMP_URL;
-  const streamKey = useMemo(() => userProfile?.streamKey, [userProfile]);
+  const streamKey = useMemo(() => userProfile?.streamKey || "", [userProfile]);
+
+  const queryClient = useQueryClient();
+
+  const regenKeyMutation = useMutation(() => {
+    return api.post<string>("user/profile/streamKey");
+  });
 
   const toggleStreamKeyVisibility = () => {
     setShowStreamKey(!showStreamKey);
@@ -32,6 +40,19 @@ export default function Credentials() {
       .catch(() => {
         toast.error("Failed to copy");
       });
+  };
+
+  const regenKey = () => {
+    regenKeyMutation.mutate(undefined, {
+      onSuccess: (res) => {
+        void queryClient.setQueryData<Profile>(["profile"], (old) =>
+          old ? { ...old, streamKey: res.data } : undefined
+        );
+      },
+      onError: () => {
+        toast.error("Error regenerating key");
+      },
+    });
   };
 
   return (
@@ -97,9 +118,12 @@ export default function Credentials() {
           </div>
         </div>
 
-        <p className="mt-4 text-sm text-muted-foreground">
-          Keep your stream key secret. Never share it with anyone.
-        </p>
+        <div className="flex pt-4">
+          <span className="flex-1 text-sm text-muted-foreground">
+            Keep your stream key secret. Never share it with anyone.
+          </span>
+          <Button onClick={regenKey}>Regenerate key</Button>
+        </div>
       </div>
     </div>
   );

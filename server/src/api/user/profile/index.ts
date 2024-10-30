@@ -7,6 +7,8 @@ import express from "express";
 import asyncHandler from "express-async-handler";
 import profilePictureRouter from "./profilePicture";
 import bioRouter from "./bio";
+import streamKeyRouter from "./streamKey";
+import usernameRouter from "./username";
 const router = express.Router();
 
 router.get(
@@ -40,5 +42,7 @@ router.get(
 
 router.use("/profilePicture", profilePictureRouter);
 router.use("/bio", bioRouter);
+router.use("/streamKey", streamKeyRouter);
+router.use("/username", usernameRouter);
 
 export default router;

@@ -11,6 +11,9 @@ import { users } from "@/lib/db/schema/users";
 import { eq, like } from "drizzle-orm";
 import type { JwtPayload } from "@/types/auth";
 import type { ReturnData, Transaction } from "@/types/generic";
+import crypto from "crypto";
+import redisClient from "../redis";
+import { REDIS_KEYS } from "@/config/environment";
 
 export const generateAccessToken = (
     userId: string,
@@ -62,10 +65,18 @@ export const generateRefreshToken = async (
     return { success: true, data: { refreshToken: token, sessionExpiry } };
 };
 
+export const sanitizeUsername = (input: string, replacement = "_"): string => {
+    let sanitized = input.trim().toLowerCase();
+    sanitized = sanitized.replace(/[^a-zA-Z0-9_-]/g, replacement);
+    sanitized = sanitized.substring(0, 69);
+
+    return sanitized;
+};
+
 export const generateUniqueUsername = async (
     baseUsername: string
 ): Promise<ReturnData<string>> => {
-    baseUsername = baseUsername.toLowerCase();
+    baseUsername = sanitizeUsername(baseUsername);
     try {
         const conflicting = await db
             .select()
@@ -89,5 +100,40 @@ export const generateUniqueUsername = async (
         return { success: true, data: maybeUnique };
     } catch {
         return { success: false, error: "Database error" };
+    }
+};
+
+export const generateStreamKey = async (
+    userId: string,
+    updateUserTable = false
+): Promise<ReturnData<string>> => {
+    try {
+        const streamKey = crypto
+            .createHash("sha256")
+            .update(
+                userId +
+                    Date.now().toString() +
+                    crypto.randomBytes(16).toString()
+            )
+            .digest("hex");
+        if (updateUserTable) {
+            const result = await db
+                .update(users)
+                .set({
+                    streamKey,
+                })
+                .where(eq(users.userId, userId))
+                .returning();
+            if (!result.length)
+                return { success: false, error: "User does not exist" };
+        }
+        void redisClient.del(REDIS_KEYS.invalidStreamKey(streamKey)); // JIC
+        return { success: true, data: streamKey };
+    } catch (e) {
+        return {
+            success: false,
+            error: "An error occurred",
+            feedback: `Couldn't generate stream key: ${e as Error}`,
+        };
     }
 };

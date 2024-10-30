@@ -23,8 +23,9 @@ const useProfile = () => {
   const { authState } = useAuth();
   const useQueryResult = useQuery(["profile"], fetchProfile, {
     staleTime: Infinity,
-    retry: 1,
+    retry: false,
     enabled: !!authState,
+    refetchOnWindowFocus: false,
   });
   return useQueryResult;
 };

@@ -67,7 +67,6 @@ router.post(
                         .insert(streams)
                         .values({
                             userId: user.userId,
-                            username: user.username,
                             title: parsed.data.title,
                             category: parsed.data.category,
                         })

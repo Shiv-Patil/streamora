@@ -67,7 +67,8 @@ export const REDIS_KEYS = {
         `lastSessionInvalidation:${userId}`,
     channelInfoCache: (username: string) => `channelInfo:${username}`,
     streamViewers: (streamId: number) => `streamViewers:${streamId}`,
-    rtmpConnected: (username: string) => `rtmpConnected:${username}`,
+    rtmpConnected: (userId: string) => `rtmpConnected:${userId}`,
+    invalidStreamKey: (streamKey: string) => `invalidStreamKey:${streamKey}`,
 };
 
 /**

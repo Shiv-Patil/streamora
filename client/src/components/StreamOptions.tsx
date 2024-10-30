@@ -68,7 +68,7 @@ const StreamOptions = ({
   });
 
   const endStreamMutation = useMutation(() => {
-    return api.post<string>("/stream/end");
+    return api.post<undefined>("/stream/end");
   });
 
   const saveNewTitle = () => {

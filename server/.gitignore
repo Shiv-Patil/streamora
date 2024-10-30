@@ -7,3 +7,6 @@ package-lock.json
 bun.lockb
 dist
 logs
+
+streams/*
+static/*

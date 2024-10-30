@@ -85,6 +85,8 @@ api.interceptors.response.use(
         } else if (error.response.status === 429) {
           toast.error("Too many requests");
         }
+      } else if (error.code === "ERR_NETWORK") {
+        toast.error("Server connection failed");
       }
     }
     return Promise.reject(error);

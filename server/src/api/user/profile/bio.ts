@@ -20,7 +20,6 @@ router.post(
         assert(req.user);
         const parsed = bodySchema.safeParse(req.body);
         if (!parsed.success) {
-            console.log(req.body);
             return next(
                 new AppError({
                     httpCode: HttpCode.BAD_REQUEST,

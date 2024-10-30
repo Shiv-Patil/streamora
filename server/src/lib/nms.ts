@@ -227,11 +227,23 @@ nms.on(
             const streamKey = StreamPath.split("/")[2];
             let username = "";
             await db.transaction(async (tx) => {
+                const cachedKey = await redisClient.get(
+                    REDIS_KEYS.invalidStreamKey(streamKey)
+                );
+                if (cachedKey !== null) throw new Error("Invalid stream key");
+
                 const usersWithKey = await tx
                     .select()
                     .from(users)
                     .where(eq(users.streamKey, streamKey));
-                if (!usersWithKey.length) throw new Error("Invalid stream key");
+                if (!usersWithKey.length) {
+                    await redisClient.set(
+                        REDIS_KEYS.invalidStreamKey(streamKey),
+                        "invalid",
+                        { EX: 120 }
+                    ); // Caching to avoid multiple database requests using an invalid key
+                    throw new Error("Invalid stream key");
+                }
                 const user = usersWithKey[0];
                 username = user.username;
 
@@ -239,13 +251,13 @@ nms.on(
                     throw new Error("User is not currently streaming");
 
                 const isConnected = await redisClient.get(
-                    REDIS_KEYS.rtmpConnected(username)
+                    REDIS_KEYS.rtmpConnected(user.userId)
                 );
                 if (isConnected !== null)
                     throw new Error("User is already connected");
 
                 await redisClient.set(
-                    REDIS_KEYS.rtmpConnected(username),
+                    REDIS_KEYS.rtmpConnected(user.userId),
                     "sus"
                 );
                 await redisClient.del(REDIS_KEYS.channelInfoCache(username));
@@ -286,9 +298,9 @@ nms.on(
                 force: true,
             });
 
-            await redisClient.del(REDIS_KEYS.rtmpConnected(user.username));
+            await redisClient.del(REDIS_KEYS.rtmpConnected(user.userId));
         } catch (e) {
-            logger.error(`[Cleanup] Error removing media files: ${e as Error}`);
+            logger.error(`[Cleanup] ${e as Error}`);
         }
     })
 );
