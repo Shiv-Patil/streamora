@@ -10,7 +10,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import defaultProfileBanner from "@/assets/banner.png";
-import { ExclamationCircleIcon } from "@heroicons/react/24/outline";
 import { Skeleton } from "@/components/ui/skeleton";
 import EditableFieldSection from "@/components/EditableFieldSection";
 import { z } from "zod";
@@ -22,7 +21,7 @@ const bioSchema = z
   .max(500, "Bio cannot exceed 500 characters");
 
 const Profile = () => {
-  const { data: userProfile, isError } = useProfile();
+  const { data: userProfile } = useProfile();
   const [usernameInput, setUsernameInput] = useState(userProfile?.username);
   const [isEditingBio, setIsEditingBio] = useState(false);
   const [bioInput, setBioInput] = useState(userProfile?.bio);
@@ -65,91 +64,79 @@ const Profile = () => {
 
   return (
     <div className="flex flex-1 flex-col items-center justify-center">
-      {!isError ? (
-        <>
-          <div className="flex w-full max-w-5xl flex-col gap-4 p-4 pl-0">
-            <EditableFieldSection title="Profile">
-              <div className="flex items-center gap-4">
-                <div className="flex flex-col items-center gap-2">
-                  <UserAvatar
-                    profilePicture={userProfile?.profilePicture}
-                    className="h-16 w-16"
-                  />
-                  <EditAvatar />
-                </div>
-                <div className="flex flex-col gap-2">
-                  <h4 className="text-xl">{userProfile?.username}</h4>
-                  {userProfile ? (
-                    <div className="flex items-center gap-2">
-                      {userProfile.followerCount}
-                      <span className="text-muted-foreground">Followers</span>
-                    </div>
-                  ) : null}
-                </div>
-              </div>
-            </EditableFieldSection>
-            <EditableFieldSection title="Banner Image">
-              <div className="relative aspect-[5/2] h-auto w-full max-w-xl self-center">
-                {userProfile ? (
-                  <img
-                    className="absolute h-full w-full object-cover"
-                    src={userProfile?.profileBanner ?? defaultProfileBanner}
-                  />
-                ) : (
-                  <Skeleton className="absolute h-full w-full" />
-                )}
-              </div>
-            </EditableFieldSection>
-            <EditableFieldSection title="Username">
-              <Input
-                value={usernameInput}
-                onChange={(e) => setUsernameInput(e.target.value)}
-                disabled
+      <div className="flex w-full max-w-5xl flex-col gap-4 p-4 pl-0">
+        <EditableFieldSection title="Profile">
+          <div className="flex items-center gap-4">
+            <div className="flex flex-col items-center gap-2">
+              <UserAvatar
+                profilePicture={userProfile?.profilePicture}
+                className="h-16 w-16"
               />
-            </EditableFieldSection>
-            <EditableFieldSection
-              title="Bio"
-              editButton={
+              <EditAvatar />
+            </div>
+            <div className="flex flex-col gap-2">
+              <h4 className="text-xl">{userProfile?.username}</h4>
+              {userProfile ? (
                 <div className="flex items-center gap-2">
-                  <Button
-                    onClick={() => setIsEditingBio((prev) => !prev)}
-                    variant={"outline"}
-                    disabled={bioMutation.isLoading || !userProfile}
-                  >
-                    {isEditingBio ? "Cancel" : "Edit"}
-                  </Button>
-                  {isEditingBio ? (
-                    <Button
-                      onClick={() => saveNewBio()}
-                      disabled={
-                        bioInput === userProfile?.bio || bioMutation.isLoading
-                      }
-                    >
-                      {bioMutation.isLoading ? (
-                        <LoadingSpinner />
-                      ) : (
-                        "Save Changes"
-                      )}
-                    </Button>
-                  ) : null}
+                  {userProfile.followerCount}
+                  <span className="text-muted-foreground">Followers</span>
                 </div>
-              }
-            >
-              <Textarea
-                placeholder="Enter a description for the About panel on your channel page (Maximum 500 characters)"
-                className="resize-y"
-                value={bioInput}
-                onChange={(e) => setBioInput(e.target.value)}
-                disabled={!isEditingBio}
-              />
-            </EditableFieldSection>
+              ) : null}
+            </div>
           </div>
-        </>
-      ) : (
-        <>
-          <ExclamationCircleIcon /> An error occurred
-        </>
-      )}
+        </EditableFieldSection>
+        <EditableFieldSection title="Banner Image">
+          <div className="relative aspect-[5/2] h-auto w-full max-w-xl self-center">
+            {userProfile ? (
+              <img
+                className="absolute h-full w-full object-cover"
+                src={userProfile?.profileBanner ?? defaultProfileBanner}
+              />
+            ) : (
+              <Skeleton className="absolute h-full w-full" />
+            )}
+          </div>
+        </EditableFieldSection>
+        <EditableFieldSection title="Username">
+          <Input
+            value={usernameInput}
+            onChange={(e) => setUsernameInput(e.target.value)}
+            disabled
+          />
+        </EditableFieldSection>
+        <EditableFieldSection
+          title="Bio"
+          editButton={
+            <div className="flex items-center gap-2">
+              <Button
+                onClick={() => setIsEditingBio((prev) => !prev)}
+                variant={"outline"}
+                disabled={bioMutation.isLoading || !userProfile}
+              >
+                {isEditingBio ? "Cancel" : "Edit"}
+              </Button>
+              {isEditingBio ? (
+                <Button
+                  onClick={() => saveNewBio()}
+                  disabled={
+                    bioInput === userProfile?.bio || bioMutation.isLoading
+                  }
+                >
+                  {bioMutation.isLoading ? <LoadingSpinner /> : "Save Changes"}
+                </Button>
+              ) : null}
+            </div>
+          }
+        >
+          <Textarea
+            placeholder="Enter a description for the About panel on your channel page (Maximum 500 characters)"
+            className="resize-y"
+            value={bioInput}
+            onChange={(e) => setBioInput(e.target.value)}
+            disabled={!isEditingBio}
+          />
+        </EditableFieldSection>
+      </div>
     </div>
   );
 };

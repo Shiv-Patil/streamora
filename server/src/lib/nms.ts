@@ -7,7 +7,8 @@ import logger from "./logger";
 import ffmpeg from "fluent-ffmpeg";
 import path from "path";
 import fs from "fs";
-import { STREAM_MEDIA_ROOT } from "@/config/environment";
+import { REDIS_KEYS, STREAM_MEDIA_ROOT } from "@/config/environment";
+import redisClient from "./redis";
 
 const nms = new NodeMediaServer(nmsConfig);
 
@@ -236,6 +237,18 @@ nms.on(
 
                 if (user.currentStreamId === null)
                     throw new Error("User is not currently streaming");
+
+                const isConnected = await redisClient.get(
+                    REDIS_KEYS.rtmpConnected(username)
+                );
+                if (isConnected !== null)
+                    throw new Error("User is already connected");
+
+                await redisClient.set(
+                    REDIS_KEYS.rtmpConnected(username),
+                    "sus"
+                );
+                await redisClient.del(REDIS_KEYS.channelInfoCache(username));
             });
             logger.debug(
                 "[NodeEvent on prePublish]",
@@ -272,6 +285,8 @@ nms.on(
                 recursive: true,
                 force: true,
             });
+
+            await redisClient.del(REDIS_KEYS.rtmpConnected(user.username));
         } catch (e) {
             logger.error(`[Cleanup] Error removing media files: ${e as Error}`);
         }

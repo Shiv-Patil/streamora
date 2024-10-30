@@ -2,6 +2,7 @@ import {
   VideoCameraIcon,
   UserCircleIcon,
   ArrowLeftIcon,
+  KeyIcon,
 } from "@heroicons/react/24/outline";
 import {
   NavigationMenu,
@@ -27,6 +28,12 @@ const DashboardSidenav = () => {
             <NavLink to="/dashboard/profile">
               <UserCircleIcon className="h-6 w-6" />
               Profile
+            </NavLink>
+          </NavigationMenuItem>
+          <NavigationMenuItem>
+            <NavLink to="/dashboard/credentials">
+              <KeyIcon className="h-6 w-6" />
+              Credentials
             </NavLink>
           </NavigationMenuItem>
           <div className="flex-1" />

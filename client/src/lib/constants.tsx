@@ -15,3 +15,17 @@ export const getStreamUrl = (username: string) =>
 
 export const LOGIN_ENDPOINT = "/auth/login";
 export const REFRESH_ENDPOINT = "/auth/refresh";
+export const RTMP_URL = "rtmp://172.21.0.6/live";
+
+export const categories = [
+  { label: "Gaming", value: "Gaming" },
+  { label: "Art", value: "Art" },
+  { label: "Music", value: "Music" },
+  { label: "Education", value: "Education" },
+  { label: "Tech", value: "Tech" },
+  { label: "Sports", value: "Sports" },
+  { label: "Creative", value: "Creative" },
+  { label: "IRL", value: "IRL" },
+  { label: "Politics", value: "Politics" },
+  { label: "Alternative", value: "Alternative" },
+];

@@ -11,6 +11,7 @@ import DashboardLayout from "@/layouts/Dashboard";
 import Stream from "@/views/dashboard/Stream";
 import Profile from "@/views/dashboard/Profile";
 import Channel from "@/views/Channel";
+import Credentials from "@/views/dashboard/Credentials";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +29,10 @@ const App = () => {
                 />
                 <Route path="/dashboard/stream" element={<Stream />} />
                 <Route path="/dashboard/profile" element={<Profile />} />
+                <Route
+                  path="/dashboard/credentials"
+                  element={<Credentials />}
+                />
                 <Route path="/dashboard/*" element={<NotFoundPage />} />
               </Route>
               <Route path="/" element={<BrowseLayout />}>

@@ -26,6 +26,7 @@ import defaultProfileBanner from "@/assets/banner.png";
 
 export interface LiveVideoPlayerProps {
   isLive?: boolean;
+  isConnected?: boolean;
   isFollowing?: boolean;
   streamerUsername?: string;
   streamerProfilePicture?: string;

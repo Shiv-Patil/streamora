@@ -64,7 +64,10 @@ router.get(
                 );
 
             let streamData:
-                | ((typeof channel.streams)[number] & { viewerCount?: string })
+                | ((typeof channel.streams)[number] & {
+                      viewerCount?: string;
+                      isConnected?: boolean;
+                  })
                 | undefined = undefined;
             if (channel.currentStreamId !== null) {
                 if (!channel.streams.length) {
@@ -80,13 +83,18 @@ router.get(
                         (await redisClient.get(
                             REDIS_KEYS.streamViewers(channel.streams[0].id)
                         )) ?? "0";
+                    const isConnected = !!(await redisClient.get(
+                        REDIS_KEYS.rtmpConnected(channel.username)
+                    ));
                     streamData = channel.streams[0];
                     streamData.viewerCount = viewerCount;
+                    streamData.isConnected = isConnected;
                 }
             }
 
             const responseData = {
                 isLive: channel.currentStreamId === null ? false : true,
+                isConnected: streamData?.isConnected ? true : false,
                 isFollowing: !!channel.followers,
                 streamerUsername: channel.username,
                 streamerProfilePicture: channel.profilePicture,

@@ -1,7 +1,6 @@
 import api from "@/lib/axios-instance";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "./Auth";
-
 export interface Profile {
   userId: string;
   username: string;
@@ -10,6 +9,9 @@ export interface Profile {
   profileBanner: string | null;
   bio: string;
   followerCount: number;
+  streamCategories: string[];
+  currentStreamId: number | null;
+  streamKey: string;
 }
 
 const fetchProfile = async (): Promise<Profile> => {

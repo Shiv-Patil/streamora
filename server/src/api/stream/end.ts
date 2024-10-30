@@ -25,6 +25,11 @@ router.post(
                     if (!data.length) throw new Error("User does not exist");
                     const user = data[0];
                     if (user.currentStreamId === null) return;
+                    const isConnected = await redisClient.get(
+                        REDIS_KEYS.rtmpConnected(user.username)
+                    );
+                    if (isConnected !== null)
+                        throw new Error("Stream is connected");
                     const updatedStreams = await tx
                         .update(streams)
                         .set({

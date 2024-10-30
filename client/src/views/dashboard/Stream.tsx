@@ -34,6 +34,8 @@ function Stream() {
               <StreamOptions
                 username={userProfile!.username}
                 title={channel.streamTitle}
+                category={channel.streamCategory}
+                isConnected={!!channel.isConnected}
               />
             ) : (
               <StreamStartForm username={userProfile?.username} />

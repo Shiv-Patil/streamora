@@ -32,19 +32,7 @@ import {
 import { toast } from "sonner";
 import { useState } from "react";
 import api from "@/lib/axios-instance";
-
-const categories = [
-  { label: "Gaming", value: "Gaming" },
-  { label: "Art", value: "Art" },
-  { label: "Music", value: "Music" },
-  { label: "Education", value: "Education" },
-  { label: "Tech", value: "Tech" },
-  { label: "Sports", value: "Sports" },
-  { label: "Creative", value: "Creative" },
-  { label: "IRL", value: "IRL" },
-  { label: "Politics", value: "Politics" },
-  { label: "Alternative", value: "Alternative" },
-];
+import { categories } from "@/lib/constants";
 
 const categoryValues = categories.map((e) => e.value);
 
