@@ -65,10 +65,13 @@ export const REDIS_URL = DOCKER
 export const REDIS_KEYS = {
     lastSessionInvalidation: (userId: string) =>
         `lastSessionInvalidation:${userId}`,
+    userProfile: (userId: string) => `userProfile:${userId}`,
     channelInfoCache: (username: string) => `channelInfo:${username}`,
+    streamMetrics: (streamId: number) => `streamMetrics:${streamId}`,
     streamViewers: (streamId: number) => `streamViewers:${streamId}`,
     rtmpConnected: (userId: string) => `rtmpConnected:${userId}`,
     invalidStreamKey: (streamKey: string) => `invalidStreamKey:${streamKey}`,
+    userFeed: (userId?: string) => `userFeed:${userId ?? "common"}`,
 };
 
 /**

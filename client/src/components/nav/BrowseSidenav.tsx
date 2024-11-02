@@ -6,10 +6,32 @@ import {
   NavigationMenuList,
 } from "@radix-ui/react-navigation-menu";
 import { NavLink } from "./NavLink";
-import { useState } from "react";
+import { useAuth } from "@/hooks/Auth";
+import useProfile, { Following } from "@/hooks/Profile";
+import ImageWithFallback from "../ImageWithFallback";
+import { Link } from "react-router-dom";
+
+const FollowingListItem = ({
+  following: { username, profilePicture, isLive },
+}: {
+  following: Following;
+}) => {
+  return (
+    <Link to={username} className="flex items-center gap-2">
+      <ImageWithFallback src={profilePicture} />
+      <div className="flex flex-col">
+        {username}
+        {isLive ? (
+          <span className="flex gap-1 text-sm text-muted-foreground">live</span>
+        ) : null}
+      </div>
+    </Link>
+  );
+};
 
 const BrowseSidenav = () => {
-  const [following] = useState([]);
+  const { data: userProfile } = useProfile();
+  const { authState } = useAuth();
 
   return (
     <div className="relative w-64 p-4 pr-0 pt-0 max-lg:hidden">
@@ -24,13 +46,19 @@ const BrowseSidenav = () => {
         </NavigationMenuList>
         <Separator />
         <NavigationMenuList>
-          <div className="flex flex-col gap-1 text-sm">
+          <div className="flex max-h-[calc(100vh-9rem)] flex-col gap-2 overflow-y-scroll text-sm">
             <span>Following</span>
-            {!following.length ? (
+            {!authState ? (
               <span className="text-muted-foreground">
-                You are not following any channel yet.
+                Sign in to follow streamers!
               </span>
-            ) : null}
+            ) : !userProfile || !userProfile.following.length ? (
+              "You are not following any channel yet."
+            ) : (
+              userProfile.following.map((following, key) => (
+                <FollowingListItem following={following} key={key} />
+              ))
+            )}
           </div>
         </NavigationMenuList>
       </NavigationMenu>

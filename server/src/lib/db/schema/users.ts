@@ -23,6 +23,7 @@ export const users = pgTable("users", {
         .notNull()
         .default(sql`'{}'::stream_category[]`),
     currentStreamId: integer("current_stream_id"),
+    lastStremedAt: timestamp("last_streamed_at", { withTimezone: true }),
     streamKey: text("stream_key").notNull().unique(),
 });
 

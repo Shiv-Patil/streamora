@@ -60,8 +60,8 @@ const StreamStartForm = ({ username }: { username?: string }) => {
   });
 
   const mutation = useMutation({
-    mutationFn: (values: z.infer<typeof formSchema>) => {
-      return api.post("/stream/start", values);
+    mutationFn: async (values: z.infer<typeof formSchema>) => {
+      return await api.post("/stream/start", values);
     },
     onSuccess: () => {
       toast.success("Stream started successfully");
@@ -80,7 +80,10 @@ const StreamStartForm = ({ username }: { username?: string }) => {
   return (
     <Form {...form}>
       <form
-        onSubmit={() => void form.handleSubmit(onSubmit)()}
+        onSubmit={(e) => {
+          e.preventDefault();
+          void form.handleSubmit(onSubmit)();
+        }}
         className="space-y-8"
       >
         <FormField

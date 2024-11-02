@@ -5,7 +5,7 @@ import { streams } from "@/lib/db/schema/streams";
 import { users } from "@/lib/db/schema/users";
 import redisClient from "@/lib/redis";
 import assert from "assert";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import express from "express";
 import expressAsyncHandler from "express-async-handler";
 
@@ -43,6 +43,7 @@ router.post(
                         .update(users)
                         .set({
                             currentStreamId: null,
+                            lastStremedAt: sql`CURRENT_TIMESTAMP`,
                         })
                         .where(eq(users.userId, user.userId))
                         .returning();

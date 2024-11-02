@@ -9,27 +9,30 @@ import {
   ArrowsPointingOutIcon,
   ArrowsPointingInIcon,
   EyeIcon,
-  Cog6ToothIcon,
   VideoCameraIcon,
   HeartIcon,
-  CheckIcon,
+  XMarkIcon,
 } from "@heroicons/react/24/outline";
 import { LoadingSpinner } from "@/components/ui/spinner";
-import { cn } from "@/lib/utils";
+import { cn, fromNow } from "@/lib/utils";
 import LiveChat from "@/components/LiveChat";
-import UserAvatar from "@/components/UserAvatar";
+import ImageWithFallback from "@/components/ImageWithFallback";
 import { getStreamUrl } from "@/lib/constants";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import TimeSince from "@/components/TimeSince";
 import defaultProfileBanner from "@/assets/banner.png";
+import useProfile, { Following, Profile } from "@/hooks/Profile";
+import { useAuth } from "@/hooks/Auth";
+import { toast } from "sonner";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import api from "@/lib/axios-instance";
 
 export interface LiveVideoPlayerProps {
   isLive?: boolean;
   isConnected?: boolean;
-  isFollowing?: boolean;
   streamerUsername?: string;
-  streamerProfilePicture?: string;
+  streamerProfilePicture?: string | null;
   streamerProfileBanner?: string | null;
   streamerFollowers?: number;
   streamerBio?: string;
@@ -37,6 +40,7 @@ export interface LiveVideoPlayerProps {
   streamCategory?: string;
   streamStartedAt?: number;
   viewerCount?: number;
+  lastStreamedAt?: number | null;
 }
 
 interface PlayerState {
@@ -48,8 +52,6 @@ interface PlayerState {
   currentQuality: number;
   qualities: Quality[];
   isAutoQuality: boolean;
-  showSettings: boolean;
-  latencyMode: "low" | "normal";
 }
 
 interface Quality {
@@ -81,7 +83,7 @@ const formatResolution = (_width: number, height: number): string => {
 
 const LiveVideoPlayer: React.FC<LiveVideoPlayerProps> = ({
   isLive,
-  isFollowing,
+  isConnected,
   streamTitle,
   viewerCount,
   streamerUsername,
@@ -91,17 +93,22 @@ const LiveVideoPlayer: React.FC<LiveVideoPlayerProps> = ({
   streamerBio,
   streamCategory,
   streamStartedAt,
+  lastStreamedAt,
 }) => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const hlsRef = useRef<Hls | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const streamUrl = getStreamUrl(streamerUsername || "");
 
+  const { data: userProfile } = useProfile();
+  const { authState } = useAuth();
+  const queryClient = useQueryClient();
+
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isTheaterMode, setIsTheaterMode] = useState(false);
-  const [showStats, setShowStats] = useState(false);
+  const [isFollowing, setIsFollowing] = useState(false);
+
   const [stats, setStats] = useState({
-    buffered: 0,
     latency: 0,
   });
 
@@ -114,9 +121,22 @@ const LiveVideoPlayer: React.FC<LiveVideoPlayerProps> = ({
     currentQuality: -1,
     qualities: [],
     isAutoQuality: true,
-    showSettings: false,
-    latencyMode: "low", // 'low', 'normal'
   });
+
+  const followMutation = useMutation((username?: string) => {
+    return api.post<Following>("/user/follow", { username });
+  });
+
+  const unfollowMutation = useMutation((username?: string) => {
+    return api.post<undefined>("/user/unfollow", { username });
+  });
+
+  useEffect(() => {
+    setIsFollowing(
+      userProfile?.following.some((e) => e.username === streamerUsername) ??
+        false
+    );
+  }, [userProfile, streamerUsername]);
 
   const handleError = (error: PlayerError) => {
     setPlayerState((prev) => ({ ...prev, error: error.message }));
@@ -127,27 +147,72 @@ const LiveVideoPlayer: React.FC<LiveVideoPlayerProps> = ({
     }
   };
 
-  const updateQualityLevels = useCallback(
-    (hls: Hls) => {
-      const qualities: Quality[] = hls.levels.map(
-        (level: Level, index: number) => ({
-          id: index,
-          height: level.height,
-          width: level.width,
-          bitrate: level.bitrate,
-          label: `${formatResolution(level.width, level.height)} (${formatBitrate(level.bitrate)})`,
-        })
-      );
+  const handleFollowUnfollow = useCallback(() => {
+    if (!authState) return toast.error("Sign in to follow!");
+    if (isFollowing) {
+      unfollowMutation.mutate(streamerUsername, {
+        onError: () => {
+          toast.error("An error occurred");
+        },
+        onSuccess: () => {
+          queryClient.setQueryData<Profile>(["profile"], (prev) =>
+            prev
+              ? {
+                  ...prev,
+                  following: prev.following.filter(
+                    (e) => e.username !== streamerUsername
+                  ),
+                }
+              : undefined
+          );
+        },
+      });
+    } else {
+      followMutation.mutate(streamerUsername, {
+        onError: () => {
+          toast.error("An error occurred");
+        },
+        onSuccess: (res) => {
+          queryClient.setQueryData<Profile>(["profile"], (prev) =>
+            prev
+              ? {
+                  ...prev,
+                  following: [...prev.following, res.data].sort(
+                    (a, b) => +b.isLive - +a.isLive
+                  ),
+                }
+              : undefined
+          );
+        },
+      });
+    }
+  }, [
+    authState,
+    streamerUsername,
+    isFollowing,
+    followMutation,
+    unfollowMutation,
+    queryClient,
+  ]);
 
-      setPlayerState((prev) => ({
-        ...prev,
-        qualities,
-        currentQuality: hls.currentLevel,
-        isAutoQuality: hls.autoLevelEnabled,
-      }));
-    },
-    [setPlayerState]
-  );
+  const updateQualityLevels = useCallback((hls: Hls) => {
+    const qualities: Quality[] = hls.levels.map(
+      (level: Level, index: number) => ({
+        id: index,
+        height: level.height,
+        width: level.width,
+        bitrate: level.bitrate,
+        label: `${formatResolution(level.width, level.height)} (${formatBitrate(level.bitrate)})`,
+      })
+    );
+
+    setPlayerState((prev) => ({
+      ...prev,
+      qualities,
+      currentQuality: hls.currentLevel,
+      isAutoQuality: hls.autoLevelEnabled,
+    }));
+  }, []);
 
   const handleQualityChange = (qualityId: number) => {
     const hls = hlsRef.current;
@@ -357,12 +422,7 @@ const LiveVideoPlayer: React.FC<LiveVideoPlayerProps> = ({
     const updateStats = () => {
       if (videoRef.current && hlsRef.current) {
         setStats({
-          buffered:
-            videoRef.current.buffered.length > 0
-              ? videoRef.current.buffered.end(0) -
-                videoRef.current.buffered.start(0)
-              : 0,
-          latency: hlsRef.current.latency || 0,
+          latency: hlsRef.current.latency || Infinity,
         });
       }
     };
@@ -401,14 +461,15 @@ const LiveVideoPlayer: React.FC<LiveVideoPlayerProps> = ({
             />
 
             {/* Title Bar */}
-            <div className="absolute left-0 right-0 top-0 z-10 bg-gradient-to-b from-black/70 to-transparent p-4 opacity-0 transition-opacity group-hover:opacity-100">
+            <div className="absolute left-0 right-0 top-0 z-10 bg-gradient-to-b from-black/70 to-transparent p-2 opacity-0 transition-opacity group-hover:opacity-100">
               <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-lg font-bold text-white">
-                    {streamTitle}
-                  </h2>
-                  <p className="text-sm text-white/80">{streamerUsername}</p>
+                {/* Stats Display */}
+                <div className="rounded text-xs text-white">
+                  {isConnected ? (
+                    <div>Latency: {stats.latency.toFixed(2)}s</div>
+                  ) : null}
                 </div>
+
                 <div className="flex items-center gap-2">
                   <div className="flex items-center gap-1 rounded-full bg-black/40 px-3 py-1">
                     <EyeIcon className="h-4 w-4 text-red-500" />
@@ -527,34 +588,6 @@ const LiveVideoPlayer: React.FC<LiveVideoPlayerProps> = ({
                   )}
                 </div>
 
-                {/* Settings */}
-                <div className="relative">
-                  <button
-                    onClick={() =>
-                      setPlayerState((prev) => ({
-                        ...prev,
-                        showSettings: !prev.showSettings,
-                      }))
-                    }
-                    className="flex h-10 w-10 items-center justify-center rounded-full bg-white/20 transition-colors hover:bg-white/30"
-                  >
-                    <Cog6ToothIcon className="h-6 w-6 text-white" />
-                  </button>
-
-                  {playerState.showSettings && (
-                    <div className="absolute bottom-full mb-2 w-48 rounded-lg bg-black/90 p-2">
-                      <div className="mb-2 px-3 py-1 text-sm text-white/60">
-                        Settings
-                      </div>
-                      <button
-                        onClick={() => setShowStats(!showStats)}
-                        className="w-full rounded px-3 py-2 text-left text-sm text-white/80 hover:bg-white/10"
-                      >
-                        {showStats ? "Hide Stats" : "Show Stats"}
-                      </button>
-                    </div>
-                  )}
-                </div>
                 <div className="flex-1" />
                 {/* Theater Mode */}
                 <button
@@ -577,14 +610,6 @@ const LiveVideoPlayer: React.FC<LiveVideoPlayerProps> = ({
                     <ArrowsPointingOutIcon className="h-6 w-6 text-white" />
                   )}
                 </button>
-
-                {/* Stats Display */}
-                {showStats && (
-                  <div className="ml-auto rounded bg-black/60 p-2 text-xs text-white">
-                    <div>Buffer: {stats.buffered.toFixed(1)}s</div>
-                    <div>Latency: {stats.latency.toFixed(2)}s</div>
-                  </div>
-                )}
               </div>
             </div>
           </div>
@@ -607,9 +632,9 @@ const LiveVideoPlayer: React.FC<LiveVideoPlayerProps> = ({
         >
           <div className="flex items-center gap-2 max-md:flex-col max-md:items-start">
             <div className="flex flex-1 items-center gap-2">
-              <UserAvatar
+              <ImageWithFallback
                 className="h-16 w-16"
-                profilePicture={streamerProfilePicture}
+                src={streamerProfilePicture}
               />
               <div className="flex flex-1 flex-col items-start gap-1">
                 <span className="text-lg">
@@ -634,27 +659,39 @@ const LiveVideoPlayer: React.FC<LiveVideoPlayerProps> = ({
                       </span>
                     ) : null}
                   </div>
-                ) : null}
+                ) : (
+                  <span className="text-sm">
+                    {lastStreamedAt
+                      ? `Last streamed: ${fromNow(lastStreamedAt)}`
+                      : "Never streamed"}
+                  </span>
+                )}
               </div>
             </div>
 
             <div className="flex flex-col items-end gap-2">
-              <Button
-                className="flex gap-2 rounded-lg"
-                disabled={isFollowing}
-                variant={isFollowing ? "outline" : "default"}
-              >
-                {isFollowing ? (
-                  <>
-                    Following <CheckIcon className="h-5 w-5" />
-                  </>
-                ) : (
-                  <>
-                    <HeartIcon className="h-5 w-5" />
-                    Follow
-                  </>
-                )}
-              </Button>
+              {streamerUsername === userProfile?.username ? (
+                <span className="text-sm text-muted-foreground">
+                  Watching yourself lol
+                </span>
+              ) : (
+                <Button
+                  className="flex gap-2 rounded-lg"
+                  variant={isFollowing ? "outline" : "default"}
+                  onClick={handleFollowUnfollow}
+                >
+                  {isFollowing ? (
+                    <>
+                      Unfollow <XMarkIcon className="h-5 w-5" />
+                    </>
+                  ) : (
+                    <>
+                      <HeartIcon className="h-5 w-5" />
+                      Follow
+                    </>
+                  )}
+                </Button>
+              )}
               <span className="font-mono text-xs">
                 {streamStartedAt ? (
                   <TimeSince startTime={streamStartedAt} />

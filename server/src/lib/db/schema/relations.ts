@@ -2,7 +2,7 @@ import { relations } from "drizzle-orm";
 import { followers, refreshTokens, users } from "./users";
 import { streams } from "./streams";
 
-export const usersRelations = relations(users, ({ many }) => ({
+export const usersRelations = relations(users, ({ one, many }) => ({
     refreshTokens: many(refreshTokens, {
         relationName: "user",
     }),
@@ -14,6 +14,11 @@ export const usersRelations = relations(users, ({ many }) => ({
     }),
     streams: many(streams, {
         relationName: "user",
+    }),
+    liveStream: one(streams, {
+        fields: [users.currentStreamId],
+        references: [streams.id],
+        relationName: "live_stream",
     }),
 }));
 

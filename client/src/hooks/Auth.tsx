@@ -8,6 +8,7 @@ import {
 import { jwtDecode } from "jwt-decode";
 import { ACCESS_TOKEN_KEY } from "@/lib/constants";
 import api from "@/lib/axios-instance";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface AuthState {
   userId: string;
@@ -38,6 +39,7 @@ const parseJwt = (token: string) => {
 };
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const queryClient = useQueryClient();
   const [authState, setAuthState] = useState<AuthState | null>(() => {
     const accessToken = localStorage.getItem(ACCESS_TOKEN_KEY);
     if (!accessToken) return null;
@@ -64,9 +66,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [setAuthState]);
 
   const logOut = useCallback(() => {
-    void api.post("/auth/logout").catch();
-    updateAuthState(null);
-  }, [updateAuthState]);
+    api
+      .post("/auth/logout")
+      .then(() => {
+        updateAuthState(null);
+        queryClient.clear();
+      })
+      .catch(() => {});
+  }, [updateAuthState, queryClient]);
 
   const value: AuthContextType = {
     authState,

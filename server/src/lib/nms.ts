@@ -63,7 +63,7 @@ async function getStreamResolution(
 
             ffmpeg.ffprobe(inputUrl, (err, metadata) => {
                 if (err) {
-                    logger.error("FFprobe error, using default resolution");
+                    logger.debug("FFprobe error, using default resolution");
                     resolve(defaultResolution);
                     return;
                 }
@@ -87,7 +87,7 @@ async function getStreamResolution(
                 resolve(defaultResolution);
             }, 5000);
         } catch (error) {
-            logger.error(`Error in getStreamResolution: ${error as Error}`);
+            logger.debug(`Error in getStreamResolution: ${error as Error}`);
             resolve(defaultResolution);
         }
     });
@@ -166,13 +166,13 @@ async function startTranscoding(streamPath: string, username: string) {
         });
     });
 
-    const thumbnailService = () =>
-        new Promise((resolve, reject) => {
+    const thumbnailService = async () => {
+        return new Promise((resolve, reject) => {
             const command = ffmpeg(path.join(mediaRoot, "index.m3u8"))
                 .inputFormat("hls")
                 .outputOptions(["-q:v 2", "-an", "-frames:v 1", "-f image2"])
                 .size("400x?")
-                .output(path.join(mediaRoot, "thumbnail.jpeg"));
+                .output(path.join(STREAM_MEDIA_ROOT, `${username}.jpeg`));
             command
                 .on("error", (err) => {
                     reject(err);
@@ -182,6 +182,7 @@ async function startTranscoding(streamPath: string, username: string) {
                 })
                 .run();
         });
+    };
 
     // Generate master playlist
     const masterPlaylist = [
@@ -201,6 +202,7 @@ async function startTranscoding(streamPath: string, username: string) {
     );
 
     // run thumbnail service
+    setTimeout(() => void thumbnailService().catch(), 2000);
     const intervalId = setInterval(() => {
         void thumbnailService().catch(() => clearInterval(intervalId));
     }, 20000);
@@ -268,7 +270,7 @@ nms.on(
             );
             await startTranscoding(StreamPath, username);
         } catch (e) {
-            logger.error(
+            logger.debug(
                 `Stream authentication error: ${(e as Error).message}`
             );
             session.reject();
@@ -298,9 +300,21 @@ nms.on(
                 force: true,
             });
 
-            await redisClient.del(REDIS_KEYS.rtmpConnected(user.userId));
+            const thumbnailPath = path.join(
+                STREAM_MEDIA_ROOT,
+                `${user.username}.jpeg`
+            );
+            await fs.promises.rm(thumbnailPath, {
+                recursive: true,
+                force: true,
+            });
+
+            await redisClient.del([
+                REDIS_KEYS.rtmpConnected(user.userId),
+                REDIS_KEYS.channelInfoCache(user.username),
+            ]);
         } catch (e) {
-            logger.error(`[Cleanup] ${e as Error}`);
+            logger.debug(`[Cleanup error] ${e as Error}`);
         }
     })
 );

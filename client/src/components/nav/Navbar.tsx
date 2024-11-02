@@ -13,7 +13,7 @@ import api from "@/lib/axios-instance";
 import { isAxiosError } from "axios";
 import { LOGIN_ENDPOINT } from "@/lib/constants";
 import useProfile from "@/hooks/Profile";
-import UserAvatar from "../UserAvatar";
+import ImageWithFallback from "../ImageWithFallback";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -94,8 +94,8 @@ const Navbar = () => {
         <nav className="flex flex-1 justify-end">
           <DropdownMenu>
             <DropdownMenuTrigger>
-              <UserAvatar
-                profilePicture={userProfile?.profilePicture}
+              <ImageWithFallback
+                src={userProfile?.profilePicture}
                 className="cursor-pointer bg-card shadow-md"
               />
             </DropdownMenuTrigger>

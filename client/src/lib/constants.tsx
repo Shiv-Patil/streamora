@@ -10,6 +10,8 @@ const PROD_URL = "https://streamora-bphc.vercel.app/";
 export const BASE_URL =
   process.env.NODE_ENV === "production" ? PROD_URL : DEV_URL;
 export const BASE_API_URL = BASE_URL + "api/";
+export const getThumbnailUrl = (username: string) =>
+  `${BASE_URL}stream/${username}.jpeg`;
 export const getStreamUrl = (username: string) =>
   `${BASE_URL}stream/${username}/index.m3u8`;
 

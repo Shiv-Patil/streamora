@@ -140,7 +140,10 @@ router.post(
                 throw new Error("No rows updated in database");
             }
 
-            await redisClient.del(REDIS_KEYS.channelInfoCache(old[0].username));
+            await redisClient.del([
+                REDIS_KEYS.channelInfoCache(old[0].username),
+                REDIS_KEYS.userProfile(req.user.userId),
+            ]);
 
             res.status(200).json(fileURL);
         } catch (err) {

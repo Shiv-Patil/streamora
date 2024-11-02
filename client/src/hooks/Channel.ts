@@ -1,13 +1,32 @@
-import type { LiveVideoPlayerProps } from "@/components/LiveVideoPlayer";
 import api from "@/lib/axios-instance";
 import { useQuery } from "@tanstack/react-query";
 
-const fetchChannel = async (
-  username?: string
-): Promise<LiveVideoPlayerProps> => {
-  const res = await api.get<LiveVideoPlayerProps>(
-    `/channel?username=${username}`
-  );
+export interface BaseChannelType {
+  streamerUsername: string;
+  streamerProfilePicture: string | null;
+  streamerProfileBanner: string | null;
+  streamerBio: string;
+  streamerFollowers: number;
+}
+
+export interface LiveChannel {
+  isLive: true;
+  isConnected: boolean;
+  streamTitle: string;
+  streamCategory: string;
+  streamStartedAt: number;
+  viewerCount: number;
+}
+
+export interface notLiveChannel {
+  isLive: false;
+  lastStreamedAt: number | null;
+}
+
+export type Channel = BaseChannelType & (LiveChannel | notLiveChannel);
+
+const fetchChannel = async (username?: string): Promise<Channel> => {
+  const res = await api.get<Channel>(`/channel?username=${username}`);
   return res.data;
 };
 

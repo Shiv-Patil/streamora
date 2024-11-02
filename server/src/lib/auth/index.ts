@@ -127,7 +127,10 @@ export const generateStreamKey = async (
             if (!result.length)
                 return { success: false, error: "User does not exist" };
         }
-        void redisClient.del(REDIS_KEYS.invalidStreamKey(streamKey)); // JIC
+        await redisClient.del([
+            REDIS_KEYS.invalidStreamKey(streamKey),
+            REDIS_KEYS.userProfile(userId),
+        ]);
         return { success: true, data: streamKey };
     } catch (e) {
         return {

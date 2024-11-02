@@ -3,30 +3,21 @@ import { channelManager } from "@/lib/feed";
 import express from "express";
 import expressAsyncHandler from "express-async-handler";
 import { z } from "zod";
-import { fromError } from "zod-validation-error";
 
 const router = express.Router();
 
 const querySchema = z.object({
-    username: z.string().trim().toLowerCase().min(2),
+    cursor: z.string().trim().optional(),
 });
 
 router.get(
     "/",
     expressAsyncHandler(async (req, res, next) => {
         const result = querySchema.safeParse(req.query);
-        if (!result.success) {
-            return next(
-                new AppError({
-                    httpCode: HttpCode.BAD_REQUEST,
-                    description: fromError(result.error).toString(),
-                })
-            );
-        }
 
-        const channelResult = await channelManager.getChannelsFromUsernames([
-            result.data.username,
-        ]);
+        const channelResult = await channelManager.paginateUserFeed(undefined, {
+            cursor: result.data?.cursor,
+        });
         if (!channelResult.success)
             return next(
                 new AppError({
@@ -36,14 +27,8 @@ router.get(
                     feedback: channelResult.feedback,
                 })
             );
-        if (!channelResult.data.length)
-            return next(
-                new AppError({
-                    httpCode: HttpCode.BAD_REQUEST,
-                    description: "Invalid channel",
-                })
-            );
-        res.status(HttpCode.OK).json(channelResult.data[0]);
+
+        res.status(HttpCode.OK).json(channelResult.data);
     })
 );
 

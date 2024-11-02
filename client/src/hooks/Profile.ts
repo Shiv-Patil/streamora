@@ -1,6 +1,13 @@
 import api from "@/lib/axios-instance";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "./Auth";
+
+export interface Following {
+  username: string;
+  profilePicture: string | null;
+  isLive: boolean;
+}
+
 export interface Profile {
   userId: string;
   username: string;
@@ -9,6 +16,7 @@ export interface Profile {
   profileBanner: string | null;
   bio: string;
   followerCount: number;
+  following: Following[];
   streamCategories: string[];
   currentStreamId: number | null;
   streamKey: string;

@@ -26,42 +26,9 @@ const LiveChat: React.FC<LiveChatProps> = ({
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [loading] = useState(false);
-  // const [hasMore] = useState(true);
 
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const [isNearBottom, setIsNearBottom] = useState(true);
-
-  // const fetchMessages = useCallback(
-  //   async (beforeId: string | null = null) => {
-  //     if (loading || !hasMore) return;
-  //     setLoading(true);
-  //     try {
-  //       await new Promise((resolve) => setTimeout(resolve, 2000));
-  //       const newMessages: ChatMessage[] = Array.from(
-  //         { length: 10 },
-  //         (_, i) => {
-  //           const timestamp = new Date();
-  //           timestamp.setMinutes(
-  //             timestamp.getMinutes() - (beforeId ? parseInt(beforeId) : 0) - i
-  //           );
-  //           return {
-  //             id: `${timestamp.getTime()}`,
-  //             username: `User${Math.floor(Math.random() * 1000)}`,
-  //             message: `Message from ${format(timestamp, "HH:mm:ss")}`,
-  //             timestamp: timestamp.toISOString(),
-  //             color: `blue`,
-  //           };
-  //         }
-  //       );
-  //       setMessages((prev) => [...newMessages, ...prev]);
-  //     } catch (error) {
-  //       console.error("Error fetching messages:", error);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   },
-  //   [loading, hasMore]
-  // );
 
   const checkIfNearBottom = useCallback(() => {
     if (!chatContainerRef.current) return true;
@@ -71,12 +38,10 @@ const LiveChat: React.FC<LiveChatProps> = ({
     return scrollBottom < 500;
   }, []);
 
-  // Debounced scroll handler
   const handleScroll = debounce(() => {
     setIsNearBottom(checkIfNearBottom());
   }, 150);
 
-  // Scroll event listener
   useEffect(() => {
     const chatContainer = chatContainerRef.current;
     if (!chatContainer) return;
@@ -84,7 +49,6 @@ const LiveChat: React.FC<LiveChatProps> = ({
     return () => chatContainer.removeEventListener("scroll", handleScroll);
   }, [handleScroll]);
 
-  // New message
   useEffect(() => {
     const chatContainer = chatContainerRef.current;
     if (!chatContainer || !isNearBottom) return;
@@ -95,6 +59,12 @@ const LiveChat: React.FC<LiveChatProps> = ({
     (e: React.FormEvent) => {
       e.preventDefault();
       if (!newMessage.trim()) return;
+
+      if (newMessage === "clear") {
+        setMessages([]);
+        setNewMessage("");
+        return;
+      }
 
       const message: ChatMessage = {
         id: Date.now().toString(),
@@ -119,7 +89,12 @@ const LiveChat: React.FC<LiveChatProps> = ({
 
   return (
     <div className={cn("flex h-full flex-col bg-gray-900", className)}>
-      <h3 className="p-4 text-lg font-semibold">Live Chat</h3>
+      <div className="flex items-center gap-2 p-4">
+        <h3 className="text-lg font-semibold">Live Chat</h3>
+        <span className="pt-1 text-sm text-muted-foreground">
+          (doesn&apos;t work)
+        </span>
+      </div>
       <Separator />
 
       <div
@@ -139,10 +114,7 @@ const LiveChat: React.FC<LiveChatProps> = ({
             <span className="text-sm" style={{ color: msg.color }}>
               {msg.username}
             </span>
-            :{" "}
-            <span className="text-sm text-foreground">
-              {msg.message} dwadfeava
-            </span>
+            : <span className="text-sm text-foreground">{msg.message}</span>
             {/* <span className="text-sm text-muted-foreground">
                 {format(new Date(msg.timestamp), "HH:mm")}
               </span> */}

@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { LoadingSpinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
-import UserAvatar from "@/components/UserAvatar";
+import ImageWithFallback from "@/components/ImageWithFallback";
 import useProfile, { type Profile } from "@/hooks/Profile";
 import api from "@/lib/axios-instance";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -74,6 +74,7 @@ const Profile = () => {
 
     usernameMutation.mutate(parsed.data, {
       onSuccess: (res) => {
+        void queryClient.invalidateQueries(["channel", userProfile?.username]);
         queryClient.setQueryData<Profile>(["profile"], (prev) =>
           prev
             ? {
@@ -129,8 +130,8 @@ const Profile = () => {
         <EditableFieldSection title="Profile">
           <div className="flex items-center gap-4">
             <div className="flex flex-col items-center gap-2">
-              <UserAvatar
-                profilePicture={userProfile?.profilePicture}
+              <ImageWithFallback
+                src={userProfile?.profilePicture}
                 className="h-16 w-16"
               />
               <EditAvatar />

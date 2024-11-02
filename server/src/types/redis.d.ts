@@ -3,7 +3,7 @@ export interface BaseChannelType {
     streamerProfilePicture: string | null;
     streamerProfileBanner: string | null;
     streamerBio: string;
-    streamerFollowers: integer;
+    streamerFollowers: number;
 }
 
 export interface LiveChannel {
@@ -17,6 +17,26 @@ export interface LiveChannel {
 
 export interface notLiveChannel {
     isLive: false;
+    lastStreamedAt: number | null;
 }
 
 export type ChannelType = BaseChannelType & (LiveChannel | notLiveChannel);
+
+export interface Following {
+    username: string;
+    profilePicture: string | null;
+    isLive: boolean;
+}
+export interface Profile {
+    userId: string;
+    username: string;
+    email: string;
+    profilePicture: string | null;
+    profileBanner: string | null;
+    bio: string;
+    followerCount: number;
+    following: Following[];
+    streamCategories: string[];
+    currentStreamId: number | null;
+    streamKey: string;
+}

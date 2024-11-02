@@ -9,6 +9,9 @@ import profilePictureRouter from "./profilePicture";
 import bioRouter from "./bio";
 import streamKeyRouter from "./streamKey";
 import usernameRouter from "./username";
+import { type Profile } from "@/types/redis";
+import redisClient from "@/lib/redis";
+import { REDIS_KEYS } from "@/config/environment";
 const router = express.Router();
 
 router.get(
@@ -16,24 +19,63 @@ router.get(
     asyncHandler(async (req, res, next) => {
         assert(req.user);
         try {
-            const userData = await db
-                .select()
-                .from(users)
-                .where(eq(users.userId, req.user.userId));
-            if (!userData.length)
+            const cached = await redisClient.get(
+                REDIS_KEYS.userProfile(req.user.userId)
+            );
+            if (cached) {
+                res.status(HttpCode.OK).json(JSON.parse(cached));
+                return;
+            }
+            const userData = await db.query.users.findFirst({
+                where: eq(users.userId, req.user.userId),
+                with: {
+                    following: {
+                        columns: {},
+                        with: {
+                            following: {
+                                columns: {
+                                    username: true,
+                                    profilePicture: true,
+                                    currentStreamId: true,
+                                },
+                            },
+                        },
+                    },
+                },
+            });
+            if (!userData)
                 return next(
                     new AppError({
                         httpCode: HttpCode.NO_CONTENT,
                         description: "User not found",
                     })
                 );
-            res.status(200);
-            res.json(userData[0]);
+
+            const responseData: Profile = {
+                ...userData,
+                following: userData.following
+                    .map((e) => ({
+                        username: e.following.username,
+                        profilePicture: e.following.profilePicture,
+                        isLive: e.following.currentStreamId !== null,
+                    }))
+                    .toSorted((a, b) => +b.isLive - +a.isLive),
+            };
+            await redisClient.set(
+                REDIS_KEYS.userProfile(req.user.userId),
+                JSON.stringify(responseData),
+                {
+                    EX: 300,
+                }
+            );
+
+            res.status(HttpCode.OK).json(responseData);
         } catch (e) {
             return next(
                 new AppError({
                     httpCode: HttpCode.INTERNAL_SERVER_ERROR,
-                    description: `Database error: ${e as Error}`,
+                    description: "An error occurred",
+                    feedback: `${e as Error}`,
                 })
             );
         }

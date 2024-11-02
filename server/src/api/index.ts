@@ -3,6 +3,7 @@ import channelRouter from "./channel";
 import authRouter from "./auth";
 import userRouter from "./user";
 import streamRouter from "./stream";
+import feedRouter from "./feed";
 
 const router = express.Router();
 
@@ -14,6 +15,7 @@ router.get("/hello", (_req, res) => {
 });
 
 router.use("/channel", channelRouter);
+router.use("/feed", feedRouter);
 
 // Auth routes and middleware
 router.use(authRouter);

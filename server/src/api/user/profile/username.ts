@@ -26,7 +26,6 @@ const usernameSchema = z.object({
 router.post(
     "/",
     expressAsyncHandler(async (req, res, next) => {
-        assert(req.user);
         const parsed = usernameSchema.safeParse(req.body);
         if (!parsed.success) {
             return next(
@@ -39,6 +38,7 @@ router.post(
         try {
             await db.transaction(
                 async (tx) => {
+                    assert(req.user);
                     const oldAndDuplicate = await tx.query.users.findMany({
                         where(fields, { eq, or }) {
                             return or(
@@ -50,7 +50,7 @@ router.post(
                     if (
                         !oldAndDuplicate.length ||
                         (oldAndDuplicate.length === 1 &&
-                            oldAndDuplicate[0].userId !== req.user!.userId)
+                            oldAndDuplicate[0].userId !== req.user.userId)
                     )
                         throw new Error("User does not exist");
                     if (oldAndDuplicate[0].currentStreamId !== null)
@@ -75,13 +75,14 @@ router.post(
                         .set({
                             username: parsed.data.username,
                         })
-                        .where(eq(users.userId, req.user!.userId))
+                        .where(eq(users.userId, req.user.userId))
                         .returning();
                     if (!updated.length)
                         throw new Error("Username not updated in database");
-                    await redisClient.del(
-                        REDIS_KEYS.channelInfoCache(oldUsername)
-                    );
+                    await redisClient.del([
+                        REDIS_KEYS.channelInfoCache(oldUsername),
+                        REDIS_KEYS.userProfile(req.user.userId),
+                    ]);
 
                     res.status(HttpCode.OK).json(updated[0].username);
                 },

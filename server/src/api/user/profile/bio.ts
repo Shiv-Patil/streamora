@@ -42,9 +42,10 @@ router.post(
                         description: "User does not exist",
                     })
                 );
-            await redisClient.del(
-                REDIS_KEYS.channelInfoCache(updated[0].username)
-            );
+            await redisClient.del([
+                REDIS_KEYS.channelInfoCache(updated[0].username),
+                REDIS_KEYS.userProfile(req.user.userId),
+            ]);
             res.status(HttpCode.OK).json(updated[0].bio);
         } catch (e) {
             return next(
